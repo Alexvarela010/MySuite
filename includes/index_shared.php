@@ -7,6 +7,10 @@ if (!isset($descuentos) || !is_array($descuentos)) {
             'promocional' => ['porcentaje' => 3.0, 'activo' => true]
     ];
 }
+// Porcentaje único del descuento de cumpleaños (0 si desactivado) - se usa tanto
+// para mostrar el resumen como para guardar en BD, evitando que diverjan.
+$cumple_pct = (isset($descuentos) && isset($descuentos['cumpleanos']) && !empty($descuentos['cumpleanos']['activo']))
+    ? (float)$descuentos['cumpleanos']['porcentaje'] / 100 : 0;
 // Asegurar que $user_data siempre esté definido como null si no existe
 if (!isset($user_data)) {
     $user_data = null;
@@ -7581,16 +7585,16 @@ License URL: http://creativecommons.org/licenses/by/3.0/
             <?php if ($user_logged_in && isset($user_data) && is_array($user_data) && isset($user_data['fecha_nacimiento']) && !empty($user_data['fecha_nacimiento'])): ?>
             const fechaNacimientoBD = '<?php echo htmlspecialchars($user_data['fecha_nacimiento'], ENT_QUOTES, 'UTF-8'); ?>';
             if (fechaNacimientoBD) {
-                const fechaNac = new Date(fechaNacimientoBD);
-                const cumpleanosDia = fechaNac.getDate();
-                const cumpleanosMes = fechaNac.getMonth();
+                const partesFechaNac = fechaNacimientoBD.split('-');
+                const cumpleanosDia = parseInt(partesFechaNac[2], 10);
+                const cumpleanosMes = parseInt(partesFechaNac[1], 10) - 1;
                 const fechaEntrada = new Date(selectedStartDate);
                 const fechaSalida = new Date(selectedEndDate);
                 const añoReserva = fechaEntrada.getFullYear();
                 const cumpleanosActual = new Date(añoReserva, cumpleanosMes, cumpleanosDia);
 
                 if (cumpleanosActual >= fechaEntrada && cumpleanosActual <= fechaSalida) {
-                    descuentoCumpleanos = Math.round(subtotal * <?php echo (isset($descuentos) && isset($descuentos['cumpleanos']) && $descuentos['cumpleanos']['activo']) ? $descuentos['cumpleanos']['porcentaje'] / 100 : 0.30; ?>);
+                    descuentoCumpleanos = Math.round(subtotal * <?php echo $cumple_pct; ?>);
                 }
             }
             <?php endif; ?>
@@ -7861,11 +7865,9 @@ License URL: http://creativecommons.org/licenses/by/3.0/
         // Usar fecha de nacimiento de la BD del usuario logueado (más segura)
         const fechaNacimientoBD = '<?php echo htmlspecialchars($user_data['fecha_nacimiento'], ENT_QUOTES, 'UTF-8'); ?>';
         if (fechaNacimientoBD) {
-            const fechaNac = new Date(fechaNacimientoBD);
-
-            // Verificar si el cumpleaños está dentro del rango de fechas de la reserva
-            const cumpleanosDia = fechaNac.getDate();
-            const cumpleanosMes = fechaNac.getMonth();
+            const partesFechaNac = fechaNacimientoBD.split('-');
+            const cumpleanosDia = parseInt(partesFechaNac[2], 10);
+            const cumpleanosMes = parseInt(partesFechaNac[1], 10) - 1;
 
             // Verificar si el cumpleaños está entre las fechas de entrada y salida
             const fechaEntrada = new Date(selectedStartDate);
@@ -7877,7 +7879,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 
             // Verificar si el cumpleaños está dentro del rango de la reserva
             if (cumpleanosActual >= fechaEntrada && cumpleanosActual <= fechaSalida) {
-                descuentoCumpleanos = Math.round(subtotal * <?php echo (isset($descuentos) && isset($descuentos['cumpleanos']) && $descuentos['cumpleanos']['activo']) ? $descuentos['cumpleanos']['porcentaje'] / 100 : 0.30; ?>); // Descuento por cumpleaños
+                descuentoCumpleanos = Math.round(subtotal * <?php echo $cumple_pct; ?>); // Descuento por cumpleaños
             }
         }
         <?php endif; ?>
@@ -7944,9 +7946,9 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                 if (cumpleanosInfo) {
                     const fechaNacimientoBD = '<?php echo htmlspecialchars($user_data['fecha_nacimiento'], ENT_QUOTES, 'UTF-8'); ?>';
                     if (fechaNacimientoBD) {
-                        const fechaNac = new Date(fechaNacimientoBD);
-                        const cumpleanosDia = fechaNac.getDate();
-                        const cumpleanosMes = fechaNac.getMonth();
+                        const partesFechaNac = fechaNacimientoBD.split('-');
+                        const cumpleanosDia = parseInt(partesFechaNac[2], 10);
+                        const cumpleanosMes = parseInt(partesFechaNac[1], 10) - 1;
                         const meses = translations.months || ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
                         const birthdayMsg = <?php
                                 // Suprimir TODOS los errores y warnings usando output buffering
@@ -8081,11 +8083,11 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                 // Usar fecha de nacimiento de la BD del usuario logueado (más segura)
                 const fechaNacimientoBD = '<?php echo htmlspecialchars($user_data['fecha_nacimiento'], ENT_QUOTES, 'UTF-8'); ?>';
                 if (fechaNacimientoBD) {
-                    const fechaNac = new Date(fechaNacimientoBD);
-
-                    // Verificar si el cumpleaños está dentro del rango de fechas de la reserva
-                    const cumpleanosDia = fechaNac.getDate();
-                    const cumpleanosMes = fechaNac.getMonth();
+                    // Parsear la fecha por partes para evitar el bug de interpretación UTC
+                    // (new Date('YYYY-MM-DD') se interpreta como UTC y en Colombia queda 1 día atrás)
+                    const partesFechaNac = fechaNacimientoBD.split('-');
+                    const cumpleanosDia = parseInt(partesFechaNac[2], 10);
+                    const cumpleanosMes = parseInt(partesFechaNac[1], 10) - 1;
 
                     // Verificar si el cumpleaños está entre las fechas de entrada y salida
                     const fechaEntrada = new Date(selectedStartDate);
@@ -8098,7 +8100,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                     // Verificar si el cumpleaños está dentro del rango de la reserva
                     if (cumpleanosActual >= fechaEntrada && cumpleanosActual <= fechaSalida) {
                         // Calcular descuento por cumpleaños como monto en pesos - con redondeo
-                        return Math.round(costoBase * <?php echo (isset($descuentos) && isset($descuentos['cumpleanos']) && $descuentos['cumpleanos']['activo']) ? $descuentos['cumpleanos']['porcentaje'] / 100 : 0; ?>); // Descuento por cumpleaños
+                        return Math.round(costoBase * <?php echo $cumple_pct; ?>); // Descuento por cumpleaños
                     }
                 }
                 <?php endif; ?>
@@ -8115,16 +8117,18 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                 <?php if (isset($user_data) && is_array($user_data) && isset($user_data['fecha_nacimiento']) && !empty($user_data['fecha_nacimiento'])): ?>
                 const fechaNacimientoBD = '<?php echo htmlspecialchars($user_data['fecha_nacimiento'], ENT_QUOTES, 'UTF-8'); ?>';
                 if (fechaNacimientoBD) {
-                    const fechaNac = new Date(fechaNacimientoBD);
-                    const cumpleanosDia = fechaNac.getDate();
-                    const cumpleanosMes = fechaNac.getMonth();
+                    // Parsear la fecha por partes para evitar el bug de interpretación UTC
+                    // (new Date('YYYY-MM-DD') se interpreta como UTC y en Colombia queda 1 día atrás)
+                    const partesFechaNac = fechaNacimientoBD.split('-');
+                    const cumpleanosDia = parseInt(partesFechaNac[2], 10);
+                    const cumpleanosMes = parseInt(partesFechaNac[1], 10) - 1;
                     const fechaEntrada = new Date(selectedStartDate);
                     const fechaSalida = new Date(selectedEndDate);
                     const añoReserva = fechaEntrada.getFullYear();
                     const cumpleanosActual = new Date(añoReserva, cumpleanosMes, cumpleanosDia);
 
                     if (cumpleanosActual >= fechaEntrada && cumpleanosActual <= fechaSalida) {
-                        descuentoCumpleanos = Math.round(costoBase * <?php echo (isset($descuentos) && isset($descuentos['cumpleanos']) && $descuentos['cumpleanos']['activo']) ? $descuentos['cumpleanos']['porcentaje'] / 100 : 0; ?>);
+                        descuentoCumpleanos = Math.round(costoBase * <?php echo $cumple_pct; ?>);
                     }
                 }
                 <?php endif; ?>
@@ -8150,16 +8154,18 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                 <?php if (isset($user_data) && is_array($user_data) && isset($user_data['fecha_nacimiento']) && !empty($user_data['fecha_nacimiento'])): ?>
                 const fechaNacimientoBD = '<?php echo htmlspecialchars($user_data['fecha_nacimiento'], ENT_QUOTES, 'UTF-8'); ?>';
                 if (fechaNacimientoBD) {
-                    const fechaNac = new Date(fechaNacimientoBD);
-                    const cumpleanosDia = fechaNac.getDate();
-                    const cumpleanosMes = fechaNac.getMonth();
+                    // Parsear la fecha por partes para evitar el bug de interpretación UTC
+                    // (new Date('YYYY-MM-DD') se interpreta como UTC y en Colombia queda 1 día atrás)
+                    const partesFechaNac = fechaNacimientoBD.split('-');
+                    const cumpleanosDia = parseInt(partesFechaNac[2], 10);
+                    const cumpleanosMes = parseInt(partesFechaNac[1], 10) - 1;
                     const fechaEntrada = new Date(selectedStartDate);
                     const fechaSalida = new Date(selectedEndDate);
                     const añoReserva = fechaEntrada.getFullYear();
                     const cumpleanosActual = new Date(añoReserva, cumpleanosMes, cumpleanosDia);
 
                     if (cumpleanosActual >= fechaEntrada && cumpleanosActual <= fechaSalida) {
-                        descuentoCumpleanos = Math.round(costoBase * <?php echo (isset($descuentos) && isset($descuentos['cumpleanos']) && $descuentos['cumpleanos']['activo']) ? $descuentos['cumpleanos']['porcentaje'] / 100 : 0; ?>);
+                        descuentoCumpleanos = Math.round(costoBase * <?php echo $cumple_pct; ?>);
                     }
                 }
                 <?php endif; ?>
