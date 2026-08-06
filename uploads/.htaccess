@@ -1,0 +1,9 @@
+# Proteger directorio de uploads
+Order Deny,Allow
+Deny from all
+
+# Permitir solo acceso desde el visor de comprobantes
+<Files "*">
+    Order Deny,Allow
+    Deny from all
+</Files>

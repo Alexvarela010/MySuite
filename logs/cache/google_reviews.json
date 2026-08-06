@@ -1,0 +1,105 @@
+{
+    "fetched_at": "2026-08-06T05:00:03+00:00",
+    "reviews": [
+        {
+            "id": "AbFvOqnzVahf9HxU92SCc1HA1WhwqCso3gh0qNRnhjZm9eJTZincppkL-JWr7QGLSfUAiOCuNnJx",
+            "author_name": "Fredy Antonio Salazar Vasquez",
+            "author_photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjUnp-mUnC4v_5v1JxWWp5hZ9hc0bPq4TLNanvsKYXjcl7q4wu8=s120-c-rp-mo-ba12-br100",
+            "rating": 5,
+            "comment": "El apartamento está increíble, cuenta con vista al mar y se pueden ver unos atardeceres increíbles. El apartamento es super acogedor y está totalmente equipado (hasta mesa de billar tiene). La administración es super atenta y ofrecen un excelente servicio.\n100% recomendado!!!",
+            "reply_comment": "Fredy gracias por confiar en My Suite In Cartagena. Esperamos regreses a Cartagena o invita a tu familia y amigos para ofrecerte nuestro descuento de Fidelización en https://mysuiteincartagena.com.co/tarjetas/mysuiteincartagena/mysuiteincartagena.html.",
+            "created_at": "2026-07-31T14:23:54.186151Z",
+            "updated_at": "2026-07-31T14:23:54.186151Z"
+        },
+        {
+            "id": "AbFvOqm1nvxkb2ezfwwfsikTs3mflIJy2fuQi8DvMHO8YEc6kw84_h_SZ5ljKRzed91QbyNqKGHf",
+            "author_name": "Carlos Viveros",
+            "author_photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjUyfMg-DmrsXq1pGTWPpS_VPu-oHVET9ZNkJxRmmjF9pipnkcwK=s120-c-rp-mo-br100",
+            "rating": 5,
+            "comment": "El edificio es muy seguro, bien ubicado y cerca a D1, Carulla, la playa, restaurantes. Las perdonas de la recepcion son amables y lo mejor el apartamento es grande, 2 habitaciones con aire acondicionado, una vista hermosa al mar al atardecer por ser el piso 15, limpio, silencioso, cocina, tv con Netflix y Win Sports+. Lo mejor para la familia tiene billar, juego de tenis y hockey. Los precios son muy bajos para 8 personas.",
+            "reply_comment": "Carlos gracias por visitarnos. En tu proxima viaje te ofrecemos desde ya un 30% de descuento",
+            "created_at": "2026-06-16T13:50:49.261349Z",
+            "updated_at": "2026-07-28T04:04:11.462799Z"
+        },
+        {
+            "id": "AbFvOql0mTSKf88c01IjlnBZwYtsOTyajHESEThArkgnNgIDGeiUKzmAGxX18WpR5NqFZj3duUpzcQ",
+            "author_name": "david tarazona",
+            "author_photo_url": "https://lh3.googleusercontent.com/a/ACg8ocInCzljBOhYrkaXP1RhyBXLub7Ki_rU6N_9i-sbWL_kCw0G-A=s120-c-rp-mo-br100",
+            "rating": 5,
+            "comment": "Cómodo, excelente aire, vista única. Súper recomendado !!",
+            "reply_comment": "Gracias David y te esperamos en tus próximas vacaciones",
+            "created_at": "2026-05-29T00:47:39.700461Z",
+            "updated_at": "2026-05-29T00:47:39.700461Z"
+        },
+        {
+            "id": "AbFvOqkEk_CSsseiihJb1acMSFzRqE7wezqbeU8KI6W4dWCNDw-87YLyQ7rHToacqPwcgf5u7AKdLw",
+            "author_name": "Juliana Quintero",
+            "author_photo_url": "https://lh3.googleusercontent.com/a/ACg8ocKv5aMFD2ysuqhwj59Q8A3uui4xfbvT0JrdcCamLorz0EovQA=s120-c-rp-mo-br100",
+            "rating": 5,
+            "comment": "Muy cómodo el apartamento y muy bien ubicado en la zona del laguito, excelente para actividades como surf y kitesurf",
+            "reply_comment": "Juliana sus recomendaciones nos permiten seguir mejorando. Esperamos que regresen pronto.",
+            "created_at": "2026-05-28T22:24:25.628581Z",
+            "updated_at": "2026-05-28T22:24:25.628581Z"
+        },
+        {
+            "id": "AbFvOqkUltSk0A0iQ9SU6Qcb1tFiYIlZwzHErOx8xJyBseIU6k694okfsE880tzvAZgUDOHGzkqOog",
+            "author_name": "bienestar empresarial",
+            "author_photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjWO12ofOEPHcwlSsJ25hrHShwAy4g_Z17YCcqnO_B1xLnPocHQ=s120-c-rp-mo-br100",
+            "rating": 4,
+            "comment": "Muy cómoda y buena ubicación",
+            "reply_comment": "Esperamos seguir mejorando y atenderte en tus proximas vacaciones",
+            "created_at": "2026-05-27T23:01:00.724032Z",
+            "updated_at": "2026-05-27T23:01:00.724032Z"
+        },
+        {
+            "id": "AbFvOqnOsSvYW3r46aV-fXLrvHfYVuNUskwUFpaTxEkTDIjwNXUray0E-JlsL9xYgomnWgGEOLu1oA",
+            "author_name": "Tatiana Montesdeoca",
+            "author_photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjWwvpg9g0tjB5r8WeUHFLNKFCTYtTgX7SqVywbPSHP-AQgxB_e4=s120-c-rp-mo-br100",
+            "rating": 5,
+            "comment": "Muy bonito el lugar, aseado y personal agradable",
+            "reply_comment": "Tatiana gracias por tu visita y esoeramos verte pronto. Inscribete en la pagina www.mysuiteincartagena.com.co y darte descuentos.",
+            "created_at": "2026-04-23T03:09:28.364569Z",
+            "updated_at": "2026-04-23T03:09:28.364569Z"
+        },
+        {
+            "id": "AbFvOqk6_joLXVCoNz7s9NpdG85MOFWzm1XO-TAlMbDdZ4FCJCsA7O-slKH_uY_w8c27Cj9ddSNYvw",
+            "author_name": "Monica Jimenez",
+            "author_photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjW1DjWX8JVqTk-EK12QboW8PVmmMAaeFQ6rGZFp8-YpJuMl30k=s120-c-rp-mo-br100",
+            "rating": 5,
+            "comment": "",
+            "reply_comment": "Gracias Mónica por confiar tu descanso en nuestra Suite. Esperamos regreses pronto",
+            "created_at": "2026-02-13T13:48:55.793131Z",
+            "updated_at": "2026-02-13T13:48:55.793131Z"
+        },
+        {
+            "id": "AbFvOqka9rqe7VR4i3x-h7NCoo1V62mlb4RyEZx_eJLIaHD-LVSyjOqYAPzrgvxMQ2Mm-mQcc_mA",
+            "author_name": "paola fernandez",
+            "author_photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjUyL8lSj5TIEibNZMXy8crlMlpSeFVihHpDWYO5e_nzxaPt7tMK=s120-c-rp-mo-br100",
+            "rating": 5,
+            "comment": "Una estadía maravillosa. El apartamento es muy cómodo con todo lo necesario, impecable y con una vista al mar simplemente espectacular; los atardeceres son inolvidables. Además, está muy cerca de restaurantes y de fácil acceso a los lugares turísticos más emblemáticos de Cartagena. Tiene todo lo necesario para sentirse como en casa, en un ambiente tranquilo y agradable. Súper recomendado, sin duda volveríamos.",
+            "reply_comment": "Estamos trabajando para ofrecer un servicio placentero  y economico. Los esperamos en sus proximas vacaciones. Gracias por su estadía",
+            "created_at": "2026-01-14T16:56:46.188384Z",
+            "updated_at": "2026-05-19T17:50:07.585931Z"
+        },
+        {
+            "id": "AbFvOqlM481aHL6o_sHyPE9gxb1oZx-xAY_1DOQZV5Zte102DPgb4kMcx33Cx7IVfMymcqSFsqpWHA",
+            "author_name": "Daniel Quintero",
+            "author_photo_url": "https://lh3.googleusercontent.com/a/ACg8ocKGPGCOMFItrzX6qeIVcUTt-gkayRwZCNnv6myNXK-AyvizGw=s120-c-rp-mo-br100",
+            "rating": 5,
+            "comment": "Mi estadía fue cómoda , tiene todo lo necesario  si uno desea cocinar , buenas instalaciones,excelente vista y ubicación , restaurantes , playa  , supermercado ,transporte ,todo a unos pocos pasos",
+            "reply_comment": "Nos agrada tener huespedes como ustedes que tienen un buen gusto. Esperamos que regreses en tus proximas vacaciones",
+            "created_at": "2026-01-14T16:54:21.327862Z",
+            "updated_at": "2026-05-21T16:08:57.391577Z"
+        },
+        {
+            "id": "AbFvOqm01uKylqZex04RvnopaflKm3-6b-iYzpr0TwOYga0oKEkFH89CFYh3veHSgjkG-kAyVE_9jA",
+            "author_name": "alberto palma zamora",
+            "author_photo_url": "https://lh3.googleusercontent.com/a/ACg8ocLsCK6sxf6g5qpv71l7xvrqgy9MCeE5ezG2lK4tb5XkUP6zBQ=s120-c-rp-mo-br100",
+            "rating": 5,
+            "comment": "Edificio moderno, buena atención en la recepción, buen control para ingresar y  todo muy limpio.\nEl apartamento bien aseado, todos los utensilios de cocina para preparación de alimentos, aire acondicionado, vista al mar y ademas algunos juegos de mesa de mesa.\nEl dificio cercanl a varias playas y a restaurantes.\nBuena comunicación con la persona encargada del apto.",
+            "reply_comment": "Alberto gracias por ser nuestro huesped en el 2025 y esperamos que regreses pronto para que descanses y disfrutes de Cartagena y sus encantos. Estamos trabajando para que este 2026 sea mucho más cómoda la Suite.",
+            "created_at": "2026-01-12T16:03:23.831169Z",
+            "updated_at": "2026-06-07T21:23:15.418777Z"
+        }
+    ]
+}

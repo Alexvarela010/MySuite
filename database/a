@@ -1,0 +1,23 @@
+# 1) Verifica qué php.ini usa la CLI y qué extensiones están cargadas
+php --ini
+php -m | Select-String zip
+
+# 2) Abre el php.ini que mostró php --ini y edítalo (ejemplo: abre con el Bloc de notas)
+notepad (php --ini | Select-String "Loaded Configuration File" | ForEach-Object { $_.ToString().Split(':',2)[1].Trim() })
+
+# 3) En `php.ini` localiza y habilita la extensión (descomenta o añade una de estas líneas)
+#    Usa la que corresponda según tu PHP; normalmente basta con:
+extension=zip
+#    o en algunas instalaciones Windows:
+extension=php_zip.dll
+
+# 4) Si usas XAMPP/WAMP, reinicia Apache desde su Panel de Control.
+#    Si solo usas PHP-CLI, cierra y vuelve a abrir la terminal para recargar la configuración.
+
+# 5) Verifica que la extensión se cargó
+php -m | Select-String zip
+# o
+php -r "var_export(extension_loaded('zip'));"
+
+# 6) Ejecuta Composer otra vez
+composer install

@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjeta Digital - Carlos Arturo Viveros</title>
+    
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Carga de Google Fonts (Montserrat) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Carga de Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: radial-gradient(circle at top, #111827, #030712);
+        }
+        /* Contenedor principal de la tarjeta con transiciones suaves */
+        .card-container {
+            width: 100%;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #0f172a; /* Slate 900 */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Media Query para pantallas más grandes (tablets, desktops) */
+        @media (min-width: 450px) {
+            .card-container {
+                max-width: 430px; /* Ancho máximo en pantallas grandes */
+                margin: 2rem auto; /* Centrado y con margen vertical */
+                min-height: calc(100vh - 4rem);
+                border-radius: 28px; /* Bordes redondeados más elegantes */
+                overflow: hidden; /* Asegura que el contenido respete los bordes */
+            }
+        }
+
+        /* Imagen de fondo principal - Temática agrícola premium aclarada */
+        .main-bg {
+            background-image: url('Fondo.jpg'), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 220px;
+            position: relative;
+            filter: brightness(1.15) contrast(1.05); /* Incrementa el brillo y define detalles */
+        }
+        .main-bg::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.8) 100%); /* Sombra degradada superior más sutil y translúcida */
+        }
+
+        /* Sección de contenido principal */
+        .content-section {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, #020617 100%);
+            margin-top: -50px;
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+            position: relative;
+            padding-bottom: 2.5rem;
+            flex-grow: 1;
+            z-index: 10;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* Contenedor para la foto de perfil y el ícono de verificación */
+        .profile-container {
+            position: relative;
+            width: 112px; /* Reducido al 80% (antes 140px) */
+            height: 112px; /* Reducido al 80% (antes 140px) */
+            margin-top: -72px; /* Ajustado proporcionalmente (antes -90px) */
+            z-index: 20;
+        }
+        /* Estilo de la foto de perfil */
+        .profile-pic {
+            width: 100%;
+            height: 100%;
+            border: 4px solid #0ea5e9; /* Sky 500 para un look tecnológico y moderno */
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+            background-color: #1e293b;
+            transition: transform 0.3s ease;
+        }
+        .profile-pic:hover {
+            transform: scale(1.03);
+        }
+        /* Ícono de verificación */
+        .verification-badge {
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            background-color: #3b82f6; /* Azul de Tailwind */
+            color: white;
+            width: 26px; /* Reducido proporcionalmente */
+            height: 26px; /* Reducido proporcionalmente */
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #0f172a;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 30;
+        }
+
+        /* Estilo general para los botones de acción principal */
+        .action-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
+            cursor: pointer;
+        }
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(217, 119, 6, 0.5);
+            filter: brightness(1.1);
+        }
+        .action-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Estilo para los botones de íconos sociales */
+        .social-btn {
+            background-color: rgba(30, 41, 59, 0.7);
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .social-btn:hover {
+            background-color: rgba(14, 165, 233, 0.15);
+            border-color: rgba(14, 165, 233, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(14, 165, 233, 0.1);
+        }
+        .social-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Footer */
+        .footer-banner {
+            background-color: #0f172a;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+        }
+
+        /* --- ESTILOS PROFESIONALES PARA POPUPS --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(3, 7, 18, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: #0f172a;
+            border-radius: 24px;
+            max-width: 95%;
+            width: 440px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .modal-header {
+            padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .modal-header-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            color: #f8fafc;
+            max-width: calc(100% - 60px);
+            margin: 0 auto;
+        }
+        /* Franja decorativa para los títulos */
+        .modal-header-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3.5px;
+            background: linear-gradient(90deg, #3b82f6, #0ea5e9);
+            margin: 8px auto 0;
+            border-radius: 2px;
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            scrollbar-width: thin;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            border-radius: 99px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .modal-close-btn:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            transform: rotate(90deg);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Estilos para el Calendario de Agendamiento */
+        .calendar-day { 
+            transition: all 0.2s ease; 
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .calendar-day:not(.disabled):hover {
+            background-color: #0ea5e9;
+            color: white;
+            transform: scale(1.15);
+            font-weight: bold;
+        }
+        .calendar-day.disabled {
+            color: #475569;
+            cursor: not-allowed;
+            background-color: transparent;
+            text-decoration: line-through;
+            opacity: 0.4;
+        }
+        .calendar-day.today {
+            background-color: rgba(245, 158, 11, 0.2);
+            border: 1px solid #f59e0b;
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        .calendar-day.selected {
+            background-color: #0ea5e9;
+            color: white;
+            transform: scale(1.15);
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(14,165,233,0.4);
+        }
+        .time-slot { 
+            transition: all 0.2s ease; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            background-color: rgba(30, 41, 59, 0.5);
+            color: #e2e8f0;
+        }
+        .time-slot:hover {
+            border-color: #f59e0b;
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        .time-slot.selected {
+            background-color: #0ea5e9;
+            color: white;
+            border-color: #0ea5e9;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(14,165,233,0.25);
+        }
+
+        /* Notificación Flotante Toast */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 99px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 2000;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="md:py-4">
+
+    <div class="card-container mx-auto">
+        <!-- SECCIÓN DE IMAGEN SUPERIOR -->
+        <div class="main-bg"></div>
+        
+        <!-- SECCIÓN DE CONTENIDO PRINCIPAL -->
+        <div class="content-section">
+            <div class="flex flex-col items-center px-6 text-center">
+                
+                <!-- Contenedor de Foto de Perfil y Sello de Verificación -->
+                <div class="profile-container">
+                    <img src="perfil.jpg" 
+                         alt="Foto de perfil del Dr. Carlos Arturo Viveros Valens" 
+                         class="profile-pic object-cover rounded-full w-full h-full"
+                         onerror="this.src='https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&q=80'">
+                    <div class="verification-badge" title="Perfil Verificado">
+                        <i class="fas fa-check text-xs"></i>
+                    </div>
+                </div>
+            
+                <!-- Nombre, Títulos y Subtítulos -->
+                <h1 class="text-2xl sm:text-3xl font-bold text-white mt-4 tracking-tight leading-tight">
+                    Dr. Carlos Arturo Viveros Valens
+                </h1>
+                <p class="text-md sm:text-lg text-sky-400 font-semibold mt-1">
+                    Ingeniero Agrónomo, M. Sc., Ph. D.
+                </p>
+                
+                <!-- Frase Profesional Destacada -->
+                <div class="bg-slate-850/60 rounded-2xl p-4 mt-4 max-w-sm border border-white/5 backdrop-blur-sm">
+                    <p class="text-slate-300 text-sm opacity-95 italic leading-relaxed">
+                        "La ley del campo con inteligencia humana al servicio del agricultor y la ciencia del mejoramiento de las plantas."
+                    </p>
+                </div>
+            
+                <!-- Botones Principales de Acción Rápida -->
+                <div class="flex gap-4 w-full max-w-xs mx-auto mt-6">
+                    <button id="agendar-btn" class="action-btn flex-1 flex items-center justify-center gap-2 font-semibold py-3 px-4 rounded-full text-md">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Agendar</span>
+                    </button>
+                    <a href="tel:+573168321139" class="action-btn flex-1 flex items-center justify-center gap-2 font-semibold py-3 px-4 rounded-full text-md">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>Llamar</span>
+                    </a>
+                </div>
+                
+                <p class="text-slate-500 text-xs mt-6 tracking-wide uppercase font-semibold">Toca los íconos para interactuar</p>
+
+                <!-- Cuadrícula Interactiva de Acciones y Redes -->
+                <div class="grid grid-cols-4 gap-3 w-full max-w-sm mx-auto mt-3">
+                    
+                    <!-- Servicios (Agronomía) -->
+                    <button id="services-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <div class="flex items-center justify-center h-8 w-8 mb-0.5">
+                            <img src="ingagr.jpg" 
+                                 alt="Servicios" 
+                                 class="w-8 h-8 rounded-full object-cover"
+                                 onerror="this.style.display='none'; document.getElementById('services-icon-fallback').classList.remove('hidden');">
+                            <i id="services-icon-fallback" class="fas fa-seedling text-xl text-emerald-400 hidden"></i>
+                        </div>
+                        <span class="text-[11px] mt-1 font-medium leading-tight">Servicios</span>
+                    </button>
+                    
+                    <!-- Horarios -->
+                    <button id="horario-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <i class="fas fa-clock text-2xl text-amber-400"></i>
+                        <span class="text-[11px] mt-1.5 font-medium leading-tight">Horario</span>
+                    </button>
+                    
+                    <!-- Código QR -->
+                    <button id="qr-code-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <i class="fas fa-qrcode text-2xl text-indigo-400"></i>
+                        <span class="text-[11px] mt-1.5 font-medium leading-tight">Código QR</span>
+                    </button>
+                    
+                    <!-- Myr Suite in Cartagena(Antes Ubicación) -->
+                    <a href="https://linktr.ee/mysuitincartagena?utm_source=linktree_profile_share" target="_blank" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <div class="flex items-center justify-center h-8 w-8 mb-0.5">
+                            <img src="D:\1 Carlos Viveros\Mis documentos\Mis documentos\02 Personal 050810\Finanzas\Propiedad raíz\Cartagena apto\Logos\HOTEL CARTAGENA redondo.png" 
+                                 alt="Hotel Cartagena" 
+                                 class="w-8 h-8 rounded-full object-cover"
+                                 onerror="this.style.display='none'; document.getElementById('location-icon-fallback').classList.remove('hidden');">
+                            <i id="location-icon-fallback" class="fas fa-hotel text-xl text-amber-400 hidden"></i>
+                        </div>
+                        <span class="text-[9px] mt-1 font-medium leading-none text-center">My Suite In Cartagena</span>
+                    </a>
+                    
+                    <!-- Precipitacion Colombia (Antes Facebook) -->
+                    <a href="http://www.ideam.gov.co/" target="_blank" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <div class="flex items-center justify-center h-8 w-8 mb-0.5">
+                            <img src="precipitacion.jpg" 
+                                 alt="Precipitacion Colombia" 
+                                 class="w-8 h-8 rounded-full object-cover"
+                                 onerror="this.style.display='none'; document.getElementById('precip-icon-fallback').classList.remove('hidden');">
+                            <i id="precip-icon-fallback" class="fas fa-cloud-showers-heavy text-xl text-sky-400 hidden"></i>
+                        </div>
+                        <span class="text-[9px] mt-1 font-medium leading-none text-center">Precipitacion Colombia</span>
+                    </a>
+                    
+                    <!-- Paneleros de Colombia -->
+                    <a href="https://lavozdelospanelerosco.com/web/" target="_blank" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <div class="flex items-center justify-center h-8 w-8 mb-0.5">
+                            <img src="LVDLP.jpg" 
+                                 alt="Paneleros de Colombia" 
+                                 class="w-8 h-8 rounded-full object-cover"
+                                 onerror="this.style.display='none'; document.getElementById('paneleros-icon-fallback').classList.remove('hidden');">
+                            <div id="paneleros-icon-fallback" class="hidden flex items-center justify-center">
+                                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Cara Superior (Tono ámbar claro de panela) -->
+                                    <path d="M12 3L3 8L12 13L21 8L12 3Z" fill="#D97706"/>
+                                    <!-- Cara Izquierda (Tono intermedio) -->
+                                    <path d="M3 8V16L12 21V13L3 8Z" fill="#B45309"/>
+                                    <!-- Cara Derecha (Sombra profunda) -->
+                                    <path d="M12 13V21L21 16V8L12 13Z" fill="#78350F"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <span class="text-[9px] mt-1 font-medium leading-none text-center">Paneleros de Colombia</span>
+                    </a>
+                    
+                    <!-- Telegram -->
+                    <a href="https://t.me/caviverosv" target="_blank" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <i class="fab fa-telegram text-2xl text-sky-400"></i>
+                        <span class="text-[11px] mt-1.5 font-medium leading-tight">Telegram</span>
+                    </a>
+                    
+                    <!-- Guardar Contacto (vCard) -->
+                    <button id="save-contact-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <i class="fas fa-user-plus text-2xl text-yellow-500"></i>
+                        <span class="text-[11px] mt-1.5 font-medium leading-tight text-yellow-200">Guardar</span>
+                    </button>
+                </div>
+
+                <!-- Botón de compartir tarjeta rápido -->
+                <button id="share-card-btn" class="bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold py-2.5 px-5 rounded-full mt-6 transition-all duration-300 flex items-center gap-2 border border-white/10">
+                    <i class="fas fa-share-alt"></i> Compartir esta tarjeta
+                </button>
+
+                <!-- Guía de instalación rápida de PWA móvil -->
+                <div id="install-btn" class="text-slate-400 hover:text-white mt-5 text-xs text-center cursor-pointer transition underline decoration-dotted underline-offset-4">
+                    ¿Cómo instalar en mi celular o tablet?
+                </div>
+            </div>
+        </div>
+        
+        <!-- BANNER INFERIOR Y COLOFÓN -->
+        <div class="footer-banner text-center py-6 px-4 font-semibold flex flex-col items-center mt-auto">
+            <p class="text-white text-xs text-center px-4 max-w-sm flex items-center justify-center leading-relaxed">
+                Yo conozco que todo lo puedes y que no hay pensamiento que se esconda de ti - Job 42:2
+            </p>
+            <a href="mailto:caviverosv@gmail.com" class="text-xs text-sky-400 hover:text-sky-300 transition duration-200 mt-2 font-medium flex items-center gap-1.5">
+                <i class="far fa-envelope text-sm"></i> caviverosv@gmail.com
+            </a>
+        </div>
+    </div>
+
+
+    <!-- POPUP / MODAL DE SERVICIOS -->
+    <div id="services-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-header-title">Servicios de Consultoría</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="grid grid-cols-1 gap-5 text-left">
+                    <!-- Servicio 1: Mejoramiento Genético -->
+                    <div class="flex items-start space-x-4 p-3 rounded-xl hover:bg-slate-800/50 transition border border-transparent hover:border-slate-700/50">
+                        <img src="mg.jpg" 
+                             alt="Mejoramiento Genético de Cultivos" 
+                             class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-slate-700"
+                             onerror="this.src='https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=200&q=80'">
+                        <div>
+                            <h3 class="font-bold text-slate-100 text-sm">Mejoramiento Genético</h3>
+                            <p class="text-xs text-slate-400 mt-1">Investigación, desarrollo y selección de variedades para mayor TCH y Sacarosa, resistencia a enfermedades y eficientes en el uso de agua por medio de hibridos dobles.</p>
+                        </div>
+                    </div>
+                    <!-- Servicio 2: Nutrición Vegetal -->
+                    <div class="flex items-start space-x-4 p-3 rounded-xl hover:bg-slate-800/50 transition border border-transparent hover:border-slate-700/50">
+                        <img src="nvys.jpg" 
+                             alt="Nutrición Vegetal y Fertilidad de Suelos" 
+                             class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-slate-700"
+                             onerror="this.src='https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=200&q=80'">
+                        <div>
+                            <h3 class="font-bold text-slate-100 text-sm">Nutrición Vegetal y Suelos</h3>
+                            <p class="text-xs text-slate-400 mt-1">Análisis e interpretación de suelo y tejido foliar con planes de fertilización balanceada de alta eficiencia.</p>
+                        </div>
+                    </div>
+                    <!-- Servicio 3: Fitopatología y Plagas -->
+                    <div class="flex items-start space-x-4 p-3 rounded-xl hover:bg-slate-800/50 transition border border-transparent hover:border-slate-700/50">
+                        <img src="mip.jpg" 
+                             alt="Manejo Integrado de Plagas y Enfermedades" 
+                             class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-slate-700"
+                             onerror="this.src='https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=200&q=80'">
+                        <div>
+                            <h3 class="font-bold text-slate-100 text-sm">Manejo Integrado de Plagas (MIP)</h3>
+                            <p class="text-xs text-slate-400 mt-1">Estrategias preventivas y de control biológico/químico inteligente para mitigar daños a los cultivos.</p>
+                        </div>
+                    </div>
+                    <!-- Servicio 4: Consultoría Técnica -->
+                    <div class="flex items-start space-x-4 p-3 rounded-xl hover:bg-slate-800/50 transition border border-transparent hover:border-slate-700/50">
+                        <img src="atc.jpg" 
+                             alt="Analizador NIR Portátil Visum Palm de Iris Technology" 
+                             class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-slate-700"
+                             onerror="this.src='https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=200&q=80'">
+                        <div>
+                            <h3 class="font-bold text-slate-100 text-sm">Asesoría Técnica y Capacitación</h3>
+                            <p class="text-xs text-slate-400 mt-1">Capacitación técnica, desarrollo de modelos para el análisis in situ de suelos, tejidos y tallos de caña de azúcar con el Laboratorio Portátil utilizando la tecnología NIR.</p>
+                        </div>
+                    </div>
+                    <!-- Servicio 5: Pruebas de Evaluación Agronómica (PEA) -->
+                    <div class="flex items-start space-x-4 p-3 rounded-xl hover:bg-slate-800/50 transition border-t border-dashed border-slate-700 pt-5">
+                        <img src="ppea.jpg" 
+                             alt="Pruebas de Evaluación Agronómica PEA" 
+                             class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-slate-700"
+                             onerror="this.src='https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=200&q=80'">
+                        <div>
+                            <h3 class="font-bold text-slate-100 text-sm flex items-center gap-1.5">
+                                Pruebas PEA <span class="bg-amber-500/20 text-amber-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider border border-amber-500/30">Especialidad</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Dirección, execution y registro oficial de Pruebas de Evaluación Agronómica (PEA) para la validación de materiales de alta calidad.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP / MODAL DE HORARIO -->
+    <div id="horario-modal" class="modal-overlay">
+        <div class="modal-content">
+             <div class="modal-header">
+                <h2 class="modal-header-title">Horario de Atención</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body text-slate-200">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <span class="font-semibold text-sky-400 flex items-center gap-3">
+                            <i class="far fa-calendar-alt w-5 text-center text-amber-500"></i>Lunes a Viernes
+                        </span>
+                        <span class="font-mono bg-slate-800 px-3 py-1 rounded text-xs font-semibold text-right leading-normal">
+                            10:00 - 12:00<br>14:00 - 18:00
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-semibold text-rose-500 flex items-center gap-3">
+                            <i class="far fa-calendar-times w-5 text-center"></i>Sábados y Domingos
+                        </span>
+                        <span class="font-mono bg-rose-950/40 text-rose-400 border border-rose-900/40 px-3 py-1 rounded text-sm font-semibold">Cerrado</span>
+                    </div>
+                </div>
+                <p class="text-center text-xs text-slate-500 mt-6 leading-relaxed">Las visitas técnicas de campo o asesorías fuera del horario comercial regular están sujetas a agendamiento previo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP / MODAL DE INSTALACIÓN -->
+    <div id="install-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-header-title">¡Guarda mi Tarjeta!</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-center text-slate-300 mb-6 text-sm leading-relaxed">
+                    Mantén mi información de contacto a la mano guardando esta tarjeta interactiva directamente en la pantalla de inicio de tu celular.
+                </p>
+                <div class="flex flex-col gap-4">
+                    <!-- iOS -->
+                    <div class="p-4 bg-slate-800/40 rounded-xl border border-slate-700/50">
+                        <h3 class="text-md font-bold text-sky-400 mb-2 flex items-center gap-2">
+                            <i class="fab fa-apple text-lg"></i> Dispositivos Apple (Safari)
+                        </h3>
+                        <ol class="list-decimal list-inside text-slate-300 space-y-1.5 text-xs">
+                            <li>Presiona el botón de <strong>Compartir</strong> <i class="fas fa-share-square text-sky-500"></i> en la barra inferior.</li>
+                            <li>Desplázate y selecciona <strong>"Agregar al inicio"</strong> <i class="far fa-plus-square"></i>.</li>
+                            <li>Confirma presionando <strong>"Agregar"</strong> en la esquina superior derecha.</li>
+                        </ol>
+                    </div>
+                    <!-- Android -->
+                    <div class="p-4 bg-slate-800/40 rounded-xl border border-slate-700/50">
+                        <h3 class="text-md font-bold text-sky-400 mb-2 flex items-center gap-2">
+                            <i class="fab fa-android text-lg text-emerald-400"></i> Dispositivos Android (Chrome)
+                        </h3>
+                        <ol class="list-decimal list-inside text-slate-300 space-y-1.5 text-xs">
+                            <li>Presiona el botón de menú <i class="fas fa-ellipsis-v px-1"></i> (tres puntos verticales) arriba.</li>
+                            <li>Selecciona <strong>"Agregar a la pantalla principal"</strong> o <strong>"Instalar aplicación"</strong>.</li>
+                            <li>Sigue las instrucciones del sistema para autorizar el acceso directo.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- POPUP / MODAL DE CÓDIGO QR -->
+    <div id="qr-code-modal" class="modal-overlay">
+        <div class="modal-content">
+             <div class="modal-header">
+                <h2 class="modal-header-title">Código QR de Contacto</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body text-center flex flex-col items-center">
+                <p class="text-slate-300 text-sm mb-5 leading-relaxed">
+                    Presenta este código a tus colegas o agricultores para que puedan escanearlo con la cámara de su celular y abrir mi tarjeta digital al instante.
+                </p>
+                <div class="p-4 bg-white rounded-2xl border-2 border-sky-500/30 shadow-lg max-w-[220px]">
+                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=BEGIN:VCARD%0AVERSION:3.0%0AFN:Dr.%20Carlos%20Arturo%20Viveros%20Valens%0ATEL;TYPE=WORK,VOICE:%2B573168321139%0AEMAIL:caviverosv@gmail.com%0AEND:VCARD" 
+                          alt="Código QR de Contacto" 
+                          class="rounded-lg w-full h-auto">
+                </div>
+                 <p class="text-xs text-slate-500 mt-4 leading-relaxed">
+                     Este código incluye también la información básica de contacto lista para que el sistema del teléfono la agregue a la libreta de direcciones.
+                 </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP / MODAL DE AGENDAR CITA -->
+    <div id="agendar-modal" class="modal-overlay">
+        <div class="modal-content">
+            <!-- El contenido interactivo se genera dinámicamente mediante JS -->
+        </div>
+    </div>
+
+    <!-- Elemento flotante Toast para alertas del sistema -->
+    <div id="toast"><i class="fas fa-info-circle text-amber-400"></i> <span id="toast-message">Copiado</span></div>
+
+    <script>
+        // --- FUNCIÓN DE TOAST NOTIFICACIÓN ---
+        const showToast = (message) => {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.textContent = message;
+            toast.className = 'show';
+            setTimeout(() => {
+                toast.className = '';
+            }, 2500);
+        };
+
+        // --- MANEJADOR DE MODALES GENÉRICOS ---
+        const setupModal = (btnId, modalId) => {
+            const btn = document.getElementById(btnId);
+            const modal = document.getElementById(modalId);
+            if (!btn || !modal) return;
+
+            const openModal = () => modal.classList.add('active');
+            const closeModal = () => modal.classList.remove('active');
+
+            btn.addEventListener('click', openModal);
+            
+            const closeBtn = modal.querySelector('.modal-close-btn');
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+        };
+
+        // Configuración de modales estáticos
+        setupModal('services-btn', 'services-modal');
+        setupModal('horario-btn', 'horario-modal');
+        setupModal('install-btn', 'install-modal');
+        setupModal('qr-code-btn', 'qr-code-modal');
+
+        // --- LÓGICA DE GUARDAR CONTACTO (vCard) ---
+        const saveContactBtn = document.getElementById('save-contact-btn');
+        if (saveContactBtn) {
+            saveContactBtn.addEventListener('click', () => {
+                try {
+                    const vCard = [
+                        "BEGIN:VCARD",
+                        "VERSION:3.0",
+                        "FN:Dr. Carlos Arturo Viveros Valens",
+                        "ORG:Consultoría Agronómica y Mejoramiento Genético",
+                        "TITLE:Ingeniero Agrónomo\\, M. Sc\\, Ph. D.",
+                        "TEL;TYPE=CELL,VOICE;VALUE=uri:tel:+573168321139",
+                        "EMAIL;TYPE=PREF,INTERNET:caviverosv@gmail.com",
+                        "NOTE:La ley del campo con inteligencia humana al servicio del agricultor.",
+                        "URL:https://maps.google.com/?q=Quito",
+                        "END:VCARD"
+                    ].join("\n");
+
+                    const blob = new Blob([vCard], { type: "text/vcard;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = "Dr_Carlos_Arturo_Viveros.vcf";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    showToast("Contacto descargado. Ábrelo para guardar.");
+                } catch (e) {
+                    showToast("Hubo un error al exportar el contacto.");
+                }
+            });
+        }
+
+        // --- LÓGICA DE COMPARTIR TARJETA ---
+        const shareBtn = document.getElementById('share-card-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => {
+                const currentUrl = window.location.href;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Tarjeta Digital - Dr. Carlos Arturo Viveros',
+                        text: 'Te comparto la tarjeta digital del Dr. Carlos Arturo Viveros Valens, Agrónomo, M. Sc, Ph. D.',
+                        url: currentUrl
+                    }).then(() => {
+                        showToast("¡Tarjeta compartida con éxito!");
+                    }).catch(() => {
+                        // Acción omitida por el usuario
+                    });
+                } else {
+                    // Copiar por compatibilidad
+                    const tempInput = document.createElement('input');
+                    tempInput.value = currentUrl;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    showToast("Enlace de tarjeta copiado.");
+                }
+            });
+        }
+
+        // --- LÓGICA DEL CALENDARIO DE AGENDAMIENTO ---
+        const agendarBtn = document.getElementById('agendar-btn');
+        const agendarModal = document.getElementById('agendar-modal');
+        
+        let currentDate = new Date();
+        let selectedDate = null;
+        let selectedTime = null;
+
+        const openAgendarModal = () => {
+            const modalContentEl = agendarModal.querySelector('.modal-content') || document.createElement('div');
+            if (!agendarModal.querySelector('.modal-content')) {
+                modalContentEl.className = 'modal-content';
+                agendarModal.appendChild(modalContentEl);
+            }
+            
+            modalContentEl.innerHTML = `
+                <div class="modal-header">
+                    <h2 id="agendar-title" class="modal-header-title">Seleccionar Fecha</h2>
+                    <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Vista de Calendario -->
+                    <div id="calendar-view">
+                        <div class="flex items-center justify-between mb-4">
+                            <button id="prev-month-btn" class="text-slate-400 hover:text-sky-400 text-2xl px-3 py-1 rounded-full leading-none transition">&larr;</button>
+                            <h3 id="month-year" class="text-sm font-bold text-sky-400 uppercase tracking-wide"></h3>
+                            <button id="next-month-btn" class="text-slate-400 hover:text-sky-400 text-2xl px-3 py-1 rounded-full leading-none transition">&rarr;</button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center text-xs text-sky-400 font-bold mb-2">
+                            <div>Do</div><div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div>
+                        </div>
+                        <div id="calendar-days" class="grid grid-cols-7 gap-1.5 text-center"></div>
+                    </div>
+                    
+                    <!-- Vista de Horas -->
+                    <div id="time-view" class="hidden">
+                        <button id="back-to-calendar-btn" class="text-xs text-sky-400 hover:text-sky-300 mb-4 font-bold flex items-center gap-1.5">
+                            <i class="fas fa-arrow-left"></i> Volver al calendario
+                        </button>
+                        <p id="selected-date-text" class="text-center text-slate-200 mb-4 font-bold text-sm bg-slate-800/60 py-2.5 rounded-xl border border-slate-700/50"></p>
+                        <div id="time-slots" class="grid grid-cols-3 gap-2.5"></div>
+                        <button id="confirm-appointment-btn" class="w-full mt-6 py-3 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl transition shadow-lg disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed" disabled>
+                            Confirmar Fecha y Hora
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Re-vincular manejadores dinámicos
+            modalContentEl.querySelector('.modal-close-btn').addEventListener('click', closeAgendarModal);
+            document.getElementById('prev-month-btn').addEventListener('click', () => { 
+                currentDate.setMonth(currentDate.getMonth() - 1); 
+                renderCalendar(); 
+            });
+            document.getElementById('next-month-btn').addEventListener('click', () => { 
+                currentDate.setMonth(currentDate.getMonth() + 1); 
+                renderCalendar(); 
+            });
+            document.getElementById('back-to-calendar-btn').addEventListener('click', resetAppointmentView);
+            document.getElementById('confirm-appointment-btn').addEventListener('click', confirmAppointment);
+
+            agendarModal.classList.add('active');
+            resetAppointmentView();
+            renderCalendar();
+        };
+
+        const closeAgendarModal = () => agendarModal.classList.remove('active');
+
+        // Renderizado inteligente
+        const renderCalendar = () => {
+            currentDate.setDate(1); 
+            const month = currentDate.getMonth();
+            const year = currentDate.getFullYear();
+            
+            // Título de mes y año
+            document.getElementById('month-year').textContent = new Date(year, month).toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+            
+            const calendarDaysEl = document.getElementById('calendar-days');
+            calendarDaysEl.innerHTML = '';
+            
+            const firstDayOfMonth = currentDate.getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            const today = new Date();
+            const todayTimestamp = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+
+            // Espacios vacíos antes de iniciar el mes
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                calendarDaysEl.insertAdjacentHTML('beforeend', '<div></div>');
+            }
+
+            // Días hábiles
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.textContent = day;
+                dayEl.classList.add('calendar-day', 'h-10', 'w-10', 'mx-auto', 'flex', 'items-center', 'justify-center', 'cursor-pointer', 'rounded-full', 'text-sm', 'font-medium', 'text-slate-300');
+                
+                const dayDate = new Date(year, month, day);
+                const dayOfWeek = dayDate.getDay();
+
+                // Bloquear días pasados, sábados (6) y domingos (0)
+                if (dayDate.getTime() < todayTimestamp || dayOfWeek === 0 || dayOfWeek === 6) { 
+                    dayEl.classList.add('disabled');
+                } else {
+                    dayEl.addEventListener('click', () => selectDate(dayDate));
+                }
+                
+                // Destacar el día de hoy
+                if (dayDate.toDateString() === today.toDateString()) {
+                    dayEl.classList.add('today');
+                }
+                
+                // Mantener selección visual
+                if (selectedDate && dayDate.toDateString() === selectedDate.toDateString()) {
+                    dayEl.classList.add('selected');
+                }
+
+                calendarDaysEl.appendChild(dayEl);
+            }
+        };
+
+        const selectDate = (date) => {
+            selectedDate = date;
+            renderCalendar();
+            showTimeView();
+        };
+
+        const showTimeView = () => {
+            document.getElementById('calendar-view').classList.add('hidden');
+            document.getElementById('time-view').classList.remove('hidden');
+            document.getElementById('agendar-title').textContent = 'Seleccionar Hora';
+            
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            const formattedDate = selectedDate.toLocaleDateString('es-ES', options);
+            document.getElementById('selected-date-text').textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+            
+            renderTimeSlots();
+        };
+
+        // Generar las franjas horarias
+        const renderTimeSlots = () => {
+            const timeSlotsContainerEl = document.getElementById('time-slots');
+            timeSlotsContainerEl.innerHTML = '';
+            selectedTime = null;
+            document.getElementById('confirm-appointment-btn').disabled = true;
+
+            let availableTimes = [];
+            const dayOfWeek = selectedDate.getDay();
+
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Lunes a Viernes
+                availableTimes = ['10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
+            }
+
+            if (availableTimes.length === 0) {
+                timeSlotsContainerEl.innerHTML = '<p class="col-span-full text-center text-xs text-slate-500 py-4">No hay horarios disponibles.</p>';
+                return;
+            }
+
+            availableTimes.forEach(time => {
+                const timeSlotEl = document.createElement('div');
+                timeSlotEl.textContent = time;
+                timeSlotEl.classList.add('time-slot', 'p-2.5', 'rounded-xl', 'text-center', 'cursor-pointer', 'font-mono', 'text-sm', 'transition-all');
+                timeSlotEl.addEventListener('click', () => {
+                    document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('selected'));
+                    timeSlotEl.classList.add('selected');
+                    selectedTime = time;
+                    document.getElementById('confirm-appointment-btn').disabled = false;
+                });
+                timeSlotsContainerEl.appendChild(timeSlotEl);
+            });
+        };
+
+        const resetAppointmentView = () => {
+            const timeView = document.getElementById('time-view');
+            const calendarView = document.getElementById('calendar-view');
+            const agendarTitle = document.getElementById('agendar-title');
+            
+            if (timeView && calendarView && agendarTitle) {
+                timeView.classList.add('hidden');
+                calendarView.classList.remove('hidden');
+                agendarTitle.textContent = 'Seleccionar Fecha';
+            }
+            selectedDate = null;
+            selectedTime = null;
+        };
+        
+        // Confirmar agendamiento enviando mensaje vía Telegram
+        const confirmAppointment = () => {
+            const modalContent = agendarModal.querySelector('.modal-content');
+            const dateStr = selectedDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+            
+            modalContent.innerHTML = `
+                <div class="modal-body text-center p-8 flex flex-col items-center">
+                    <div class="text-6xl text-emerald-400 mb-4"><i class="fas fa-check-circle animate-pulse"></i></div>
+                    <h2 class="text-xl font-bold text-white mb-2">¡Casi Listo!</h2>
+                    <p class="text-slate-300 text-sm leading-relaxed">Hemos reservado temporalmente tu fecha seleccionada:</p>
+                    <div class="font-semibold text-amber-400 text-sm my-4 bg-amber-500/10 border border-amber-500/20 py-3.5 px-5 rounded-xl w-full">
+                        ${dateStr} a las ${selectedTime}
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">Para oficializar y asegurar la consulta técnica, presiona el botón inferior para enviarnos un Telegram de confirmación inmediata.</p>
+                    <button id="final-telegram-btn" class="mt-6 w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+                        <i class="fab fa-telegram text-lg"></i> Enviar Telegram
+                    </button>
+                    <button id="final-close-btn" class="mt-3 w-full py-2 text-slate-500 hover:text-slate-300 text-xs font-semibold transition">
+                        Cerrar ventana
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('final-close-btn').addEventListener('click', closeAgendarModal);
+            document.getElementById('final-telegram-btn').addEventListener('click', () => {
+                const message = encodeURIComponent(`Hola Dr. Carlos Viveros, me gustaría confirmar una cita para asesoría/consulta el día ${dateStr} a las ${selectedTime}.`);
+                window.open(`https://t.me/caviverosv?text=${message}`, '_blank');
+                closeAgendarModal();
+            });
+        };
+        
+        if (agendarBtn && agendarModal) {
+            agendarBtn.addEventListener('click', openAgendarModal);
+            agendarModal.addEventListener('click', (event) => {
+                if (event.target === agendarModal) closeAgendarModal();
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjeta Digital - Carlos Arturo Viveros</title>
+    
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Carga de Google Fonts (Montserrat) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Carga de Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: radial-gradient(circle at top, #111827, #030712);
+        }
+        /* Contenedor principal de la tarjeta con transiciones suaves */
+        .card-container {
+            width: 100%;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #0f172a; /* Slate 900 */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Media Query para pantallas más grandes (tablets, desktops) */
+        @media (min-width: 450px) {
+            .card-container {
+                max-width: 430px; /* Ancho máximo en pantallas grandes */
+                margin: 2rem auto; /* Centrado y con margen vertical */
+                min-height: calc(100vh - 4rem);
+                border-radius: 28px; /* Bordes redondeados más elegantes */
+                overflow: hidden; /* Asegura que el contenido respete los bordes */
+            }
+        }
+
+        /* Imagen de fondo principal - Temática agrícola premium aclarada */
+        .main-bg {
+            background-image: url('Fondo.jpg'), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 220px;
+            position: relative;
+            filter: brightness(1.15) contrast(1.05); /* Incrementa el brillo y define detalles */
+        }
+        .main-bg::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.8) 100%); /* Sombra degradada superior más sutil y translúcida */
+        }
+
+        /* Sección de contenido principal */
+        .content-section {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, #020617 100%);
+            margin-top: -50px;
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+            position: relative;
+            padding-bottom: 2.5rem;
+            flex-grow: 1;
+            z-index: 10;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* Contenedor para la foto de perfil y el ícono de verificación */
+        .profile-container {
+            position: relative;
+            width: 112px; /* Reducido al 80% */
+            height: 112px; /* Reducido al 80% */
+            margin-top: -72px; /* Ajustado proporcionalmente */
+            z-index: 20;
+        }
+        /* Estilo de la foto de perfil */
+        .profile-pic {
+            width: 100%;
+            height: 100%;
+            border: 4px solid #0ea5e9; /* Sky 500 para un look tecnológico y moderno */
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+            background-color: #1e293b;
+            transition: transform 0.3s ease;
+        }
+        .profile-pic:hover {
+            transform: scale(1.03);
+        }
+        /* Ícono de verificación */
+        .verification-badge {
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            background-color: #3b82f6; /* Azul de Tailwind */
+            color: white;
+            width: 26px; /* Reducido proporcionalmente */
+            height: 26px; /* Reducido proporcionalmente */
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #0f172a;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 30;
+        }
+
+        /* Estilo general para los botones de acción principal */
+        .action-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
+            cursor: pointer;
+        }
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(217, 119, 6, 0.5);
+            filter: brightness(1.1);
+        }
+        .action-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Estilo para los botones de íconos sociales */
+        .social-btn {
+            background-color: rgba(30, 41, 59, 0.7);
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .social-btn:hover {
+            background-color: rgba(14, 165, 233, 0.15);
+            border-color: rgba(14, 165, 233, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(14, 165, 233, 0.1);
+        }
+        .social-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Footer */
+        .footer-banner {
+            background-color: #0f172a;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+        }
+
+        /* --- ESTILOS PROFESIONALES PARA POPUPS --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(3, 7, 18, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: #0f172a;
+            border-radius: 24px;
+            max-width: 95%;
+            width: 440px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .modal-header {
+            padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .modal-header-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            color: #f8fafc;
+            max-width: calc(100% - 60px);
+            margin: 0 auto;
+        }
+        /* Franja decorativa para los títulos */
+        .modal-header-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3.5px;
+            background: linear-gradient(90deg, #3b82f6, #0ea5e9);
+            margin: 8px auto 0;
+            border-radius: 2px;
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            scrollbar-width: thin;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            border-radius: 99px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .modal-close-btn:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            transform: rotate(90deg);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Notificación Flotante Toast */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 99px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 2000;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="md:py-4">
+
+    <div class="card-container mx-auto">
+        <!-- SECCIÓN DE IMAGEN SUPERIOR -->
+        <div class="main-bg"></div>
+        
+        <!-- SECCIÓN DE CONTENIDO PRINCIPAL -->
+        <div class="content-section">
+            <div class="flex flex-col items-center px-6 text-center">
+                
+                <!-- Contenedor de Foto de Perfil y Sello de Verificación -->
+                <div class="profile-container">
+                    <img src="perfil.jpg" 
+                         alt="Foto de perfil del Dr. Carlos Arturo Viveros Valens" 
+                         class="profile-pic object-cover rounded-full w-full h-full"
+                         onerror="this.src='https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&q=80'">
+                    <div class="verification-badge" title="Perfil Verificado">
+                        <i class="fas fa-check text-xs"></i>
+                    </div>
+                </div>
+            
+                <!-- Nombre, Títulos y Subtítulos -->
+                <h1 class="text-2xl sm:text-3xl font-bold text-white mt-4 tracking-tight leading-tight">
+                    Dr. Carlos Arturo Viveros Valens
+                </h1>
+                <p class="text-md sm:text-lg text-sky-400 font-semibold mt-1">
+                    Ingeniero Agrónomo, M. Sc., Ph. D.
+                </p>
+                
+                <!-- Frase Profesional Destacada -->
+                <div class="bg-slate-850/60 rounded-2xl p-4 mt-4 max-w-sm border border-white/5 backdrop-blur-sm">
+                    <p class="text-slate-300 text-sm opacity-95 italic leading-relaxed">
+                        "La inteligencia humana y la ciencia del mejoramiento de las plantas al servicio de la agricultura."
+                    </p>
+                </div>
+            
+                <!-- Botones Principales de Acción Rápida -->
+                <div class="flex gap-4 w-full max-w-xs mx-auto mt-6">
+                    <!-- Botón "Agendar" convertido a enlace de reservas solicitado -->
+                    <a href="https://mysuiteincartagena.com.co/reservas/" target="_blank" class="action-btn flex-1 flex items-center justify-center gap-2 font-semibold py-3 px-4 rounded-full text-md">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Agendar</span>
+                    </a>
+                    <!-- Enlace directo para realizar llamadas telefónicas -->
+                    <a href="tel:+573137910897" class="action-btn flex-1 flex items-center justify-center gap-2 font-semibold py-3 px-4 rounded-full text-md">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>Llamar</span>
+                    </a>
+                </div>
+                
+                <p class="text-slate-500 text-xs mt-6 tracking-wide uppercase font-semibold">Toca los íconos para interactuar</p>
+
+                <!-- Cuadrícula Interactiva de Acciones y Redes -->
+                <div class="grid grid-cols-4 gap-3 w-full max-w-sm mx-auto mt-3">
+                    
+                    <!-- Mejoramiento Genético -->
+                    <button id="mg-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <div class="flex items-center justify-center h-8 w-8 mb-0.5">
+                            <img src="mg.jpg" 
+                                 alt="Mejoramiento Genético" 
+                                 class="w-8 h-8 rounded-full object-cover"
+                                 onerror="this.style.display='none'; document.getElementById('mg-icon-fallback').classList.remove('hidden');">
+                            <i id="mg-icon-fallback" class="fas fa-dna text-xl text-sky-400 hidden"></i>
+                        </div>
+                        <span class="text-[9px] mt-1 font-medium leading-none text-center text-[10px] sm:text-[9px]">Mej. Genético</span>
+                    </button>
+                    
+                    <!-- Horarios -->
+                    <button id="horario-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <i class="fas fa-clock text-2xl text-amber-400"></i>
+                        <span class="text-[11px] mt-1.5 font-medium leading-tight">Horario</span>
+                    </button>
+                    
+                    <!-- Código QR -->
+                    <button id="qr-code-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <i class="fas fa-qrcode text-2xl text-indigo-400"></i>
+                        <span class="text-[11px] mt-1.5 font-medium leading-tight">Código QR</span>
+                    </button>
+                    
+                    <!-- Manejo Integrado de Plagas y Enfermedades (MIPE) -->
+                    <button id="mip-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <div class="flex items-center justify-center h-8 w-8 mb-0.5">
+                            <img src="mip.jpg" 
+                                 alt="Manejo Integrado de Plagas y Enfermedades" 
+                                 class="w-8 h-8 rounded-full object-cover"
+                                 onerror="this.style.display='none'; document.getElementById('mip-icon-fallback').classList.remove('hidden');">
+                            <i id="mip-icon-fallback" class="fas fa-bug text-xl text-emerald-400 hidden"></i>
+                        </div>
+                        <span class="text-[9px] mt-1 font-medium leading-none text-center text-[10px] sm:text-[9px]">Manejo MIPE</span>
+                    </button>
+                    
+                    <!-- Nutrición Vegetal y Suelos -->
+                    <button id="nvs-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <div class="flex items-center justify-center h-8 w-8 mb-0.5">
+                            <img src="nvys.jpg" 
+                                 alt="Nutrición Vegetal y Suelos" 
+                                 class="w-8 h-8 rounded-full object-cover"
+                                 onerror="this.style.display='none'; document.getElementById('nvs-icon-fallback').classList.remove('hidden');">
+                            <i id="nvs-icon-fallback" class="fas fa-leaf text-xl text-emerald-400 hidden"></i>
+                        </div>
+                        <span class="text-[9px] mt-1 font-medium leading-none text-center text-[10px] sm:text-[9px]">Nutrición y Suelos</span>
+                    </button>
+                    
+                    <!-- Asesoría Técnica y Capacitación -->
+                    <button id="atc-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <div class="flex items-center justify-center h-8 w-8 mb-0.5">
+                            <img src="atc.jpg" 
+                                 alt="Asesoría Técnica y Capacitación" 
+                                 class="w-8 h-8 rounded-full object-cover"
+                                 onerror="this.style.display='none'; document.getElementById('atc-icon-fallback').classList.remove('hidden');">
+                            <i id="atc-icon-fallback" class="fas fa-graduation-cap text-xl text-sky-400 hidden"></i>
+                        </div>
+                        <span class="text-[9px] mt-1 font-medium leading-none text-center text-[10px] sm:text-[9px]">Asesoría y Cap.</span>
+                    </button>
+                    
+                    <!-- Pruebas PEA -->
+                    <button id="pea-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <div class="flex items-center justify-center h-8 w-8 mb-0.5">
+                            <img src="ppea.jpg" 
+                                 alt="Pruebas PEA" 
+                                 class="w-8 h-8 rounded-full object-cover"
+                                 onerror="this.style.display='none'; document.getElementById('pea-icon-fallback').classList.remove('hidden');">
+                            <i id="pea-icon-fallback" class="fas fa-file-signature text-xl text-amber-500 hidden"></i>
+                        </div>
+                        <span class="text-[9px] mt-1 font-medium leading-none text-center text-[10px] sm:text-[9px]">Pruebas PEA</span>
+                    </button>
+                    
+                    <!-- Guardar Contacto (vCard) -->
+                    <button id="save-contact-btn" class="social-btn flex flex-col justify-center items-center py-2 px-1 w-full h-20 rounded-2xl">
+                        <i class="fas fa-user-plus text-2xl text-yellow-500"></i>
+                        <span class="text-[11px] mt-1.5 font-medium leading-tight text-yellow-200">Guardar</span>
+                    </button>
+                </div>
+
+                <!-- Botón de compartir tarjeta rápido -->
+                <button id="share-card-btn" class="bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold py-2.5 px-5 rounded-full mt-6 transition-all duration-300 flex items-center gap-2 border border-white/10">
+                    <i class="fas fa-share-alt"></i> Compartir esta tarjeta
+                </button>
+
+                <!-- Guía de instalación rápida de PWA móvil -->
+                <div id="install-btn" class="text-slate-400 hover:text-white mt-5 text-xs text-center cursor-pointer transition underline decoration-dotted underline-offset-4">
+                    ¿Cómo instalar en mi celular o tablet?
+                </div>
+            </div>
+        </div>
+        
+        <!-- BANNER INFERIOR Y COLOFÓN -->
+        <div class="footer-banner text-center py-6 px-4 font-semibold flex flex-col items-center mt-auto">
+            <p class="text-white text-xs text-center px-4 max-w-sm flex items-center justify-center leading-relaxed">
+                Yo conozco que todo lo puedes y que no hay pensamiento que se esconda de ti - Job 42:2
+            </p>
+            <a href="mailto:caviverosv@gmail.com" class="text-xs text-sky-400 hover:text-sky-300 transition duration-200 mt-2 font-medium flex items-center gap-1.5">
+                <i class="far fa-envelope text-sm"></i> caviverosv@gmail.com
+            </a>
+        </div>
+    </div>
+
+
+    <!-- POPUP / MODAL DE MEJORAMIENTO GENÉTICO -->
+    <div id="mg-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-header-title">Mejoramiento Genético</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body text-slate-200">
+                <div class="flex flex-col items-center text-center mb-5">
+                    <img src="mg.jpg" 
+                         alt="Mejoramiento Genético" 
+                         class="w-24 h-24 rounded-2xl object-cover border-2 border-sky-500 shadow-lg mb-3"
+                         onerror="this.src='https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=400&q=80'">
+                    <span class="bg-sky-500/20 text-sky-400 text-[10px] font-extrabold px-3 py-1 rounded uppercase tracking-wider border border-sky-500/30">Investigación y Desarrollo</span>
+                </div>
+                <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                    <p>
+                        El programa de <strong>Mejoramiento Genético de Cultivos</strong> está enfocado en la selección científica de variedades vegetales de alto rendimiento comercial.
+                    </p>
+                    <p class="text-xs text-slate-400 font-semibold border-l-2 border-sky-500 pl-3 italic">
+                        "Investigación, desarrollo y selección de variedades para mayor TCH (Toneladas de Caña por Hectárea) y Sacarosa, resistencia a enfermedades y eficientes en el uso de agua por medio de híbridos dobles."
+                    </p>
+                    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 mt-2">
+                        <h4 class="font-bold text-sky-400 mb-2 text-xs uppercase tracking-wider">Líneas de Especialidad:</h4>
+                        <ul class="list-disc list-inside space-y-1.5 text-xs text-slate-300">
+                            <li>Cruzamientos dirigidos e híbridos dobles.</li>
+                            <li>Evaluación de vigor híbrido y selección clonal rigurosa.</li>
+                            <li>Pruebas de tolerancia a estrés hídrico y salino.</li>
+                            <li>Resistencia genética a fitopatógenos limitantes en caña de azúcar.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP / MODAL DE HORARIO -->
+    <div id="horario-modal" class="modal-overlay">
+        <div class="modal-content">
+             <div class="modal-header">
+                <h2 class="modal-header-title">Horario de Atención</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body text-slate-200">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <span class="font-semibold text-sky-400 flex items-center gap-3">
+                            <i class="far fa-calendar-alt w-5 text-center text-amber-500"></i>Lunes a Viernes
+                        </span>
+                        <span class="font-mono bg-slate-800 px-3 py-1 rounded text-xs font-semibold text-right leading-normal">
+                            10:00 - 12:00<br>14:00 - 18:00
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-semibold text-rose-500 flex items-center gap-3">
+                            <i class="far fa-calendar-times w-5 text-center"></i>Sábados y Domingos
+                        </span>
+                        <span class="font-mono bg-rose-950/40 text-rose-400 border border-rose-900/40 px-3 py-1 rounded text-sm font-semibold">Cerrado</span>
+                    </div>
+                </div>
+                <p class="text-center text-xs text-slate-500 mt-6 leading-relaxed">Las visitas técnicas de campo o asesorías fuera del horario comercial regular están sujetas a agendamiento previo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP / MODAL DE INSTALACIÓN -->
+    <div id="install-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-header-title">¡Guarda mi Tarjeta!</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-center text-slate-300 mb-6 text-sm leading-relaxed">
+                    Mantén mi información de contacto a la mano guardando esta tarjeta interactiva directamente en la pantalla de inicio de tu celular.
+                </p>
+                <div class="flex flex-col gap-4">
+                    <!-- iOS -->
+                    <div class="p-4 bg-slate-800/40 rounded-xl border border-slate-700/50">
+                        <h3 class="text-md font-bold text-sky-400 mb-2 flex items-center gap-2">
+                            <i class="fab fa-apple text-lg"></i> Dispositivos Apple (Safari)
+                        </h3>
+                        <ol class="list-decimal list-inside text-slate-300 space-y-1.5 text-xs">
+                            <li>Presiona el botón de <strong>Compartir</strong> <i class="fas fa-share-square text-sky-500"></i> en la barra inferior.</li>
+                            <li>Desplázate y selecciona <strong>"Agregar al inicio"</strong> <i class="far fa-plus-square"></i>.</li>
+                            <li>Confirma presionando <strong>"Agregar"</strong> en la esquina superior derecha.</li>
+                        </ol>
+                    </div>
+                    <!-- Android -->
+                    <div class="p-4 bg-slate-800/40 rounded-xl border border-slate-700/50">
+                        <h3 class="text-md font-bold text-sky-400 mb-2 flex items-center gap-2">
+                            <i class="fab fa-android text-lg text-emerald-400"></i> Dispositivos Android (Chrome)
+                        </h3>
+                        <ol class="list-decimal list-inside text-slate-300 space-y-1.5 text-xs">
+                            <li>Presiona el botón de menú <i class="fas fa-ellipsis-v px-1"></i> (tres puntos verticales) arriba.</li>
+                            <li>Selecciona <strong>"Agregar a la pantalla principal"</strong> o <strong>"Instalar aplicación"</strong>.</li>
+                            <li>Sigue las instrucciones del sistema para autorizar el acceso directo.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- POPUP / MODAL DE CÓDIGO QR -->
+    <div id="qr-code-modal" class="modal-overlay">
+        <div class="modal-content">
+             <div class="modal-header">
+                <h2 class="modal-header-title">Código QR de Contacto</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body text-center flex flex-col items-center">
+                <p class="text-slate-300 text-sm mb-5 leading-relaxed">
+                    Presenta este código a tus colegas o agricultores para que puedan escanearlo con la cámara de su celular y abrir mi tarjeta digital al instante.
+                </p>
+                <div class="p-4 bg-white rounded-2xl border-2 border-sky-500/30 shadow-lg max-w-[220px]">
+                     <!-- Código QR codificado con la información de la vCard del Dr. Carlos Viveros -->
+                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=BEGIN:VCARD%0AVERSION:3.0%0AFN:Dr.%20Carlos%20Arturo%20Viveros%20Valens%0ATEL;TYPE=WORK,VOICE:%2B573137910897%0AEMAIL:caviverosv@gmail.com%0AEND:VCARD" 
+                          alt="Código QR de Contacto" 
+                          class="rounded-lg w-full h-auto">
+                </div>
+                 <p class="text-xs text-slate-500 mt-4 leading-relaxed">
+                     Este código incluye también la información básica de contacto lista para que el sistema del teléfono la agregue a la libreta de direcciones.
+                 </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP / MODAL DE ASESORÍA TÉCNICA Y CAPACITACIÓN -->
+    <div id="atc-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-header-title">Asesoría y Capacitación</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body text-slate-200">
+                <div class="flex flex-col items-center text-center mb-5">
+                    <img src="atc.jpg" 
+                         alt="Asesoría Técnica y Capacitación" 
+                         class="w-24 h-24 rounded-2xl object-cover border-2 border-sky-500 shadow-lg mb-3"
+                         onerror="this.src='https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80'">
+                    <span class="bg-sky-500/20 text-sky-400 text-[10px] font-extrabold px-3 py-1 rounded uppercase tracking-wider border border-sky-500/30">Transferencia de Tecnología</span>
+                </div>
+                <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                    <p>
+                        Servicios profesionales de <strong>asesoría técnica y capacitación agronómica integral</strong>, diseñados para transferir conocimiento científico de alto nivel directamente al campo de cultivo.
+                    </p>
+                    <p class="text-xs text-slate-400 font-semibold border-l-2 border-sky-500 pl-3 italic">
+                        "Capacitación técnica, desarrollo de modelos para el análisis in situ de suelos, tejidos y tallos de caña de azúcar con el Laboratorio Portátil utilizando la tecnología NIR."
+                    </p>
+                    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 mt-2">
+                        <h4 class="font-bold text-sky-400 mb-2 text-xs uppercase tracking-wider">Servicios Clave:</h4>
+                        <ul class="list-disc list-inside space-y-1.5 text-xs text-slate-300">
+                            <li>Capacitaciones grupales a técnicos y personal operativo en campo.</li>
+                            <li>Desarrollo de modelos calibrados para el analizador NIR portátil.</li>
+                            <li>Consultas en tiempo real y diagnóstico inmediato para el manejo de cultivos.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP / MODAL DE DETALLE DE PRUEBAS PEA -->
+    <div id="pea-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-header-title">Pruebas PEA</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body text-slate-200">
+                <div class="flex flex-col items-center text-center mb-5">
+                    <img src="ppea.jpg" 
+                         alt="Pruebas PEA" 
+                         class="w-24 h-24 rounded-2xl object-cover border-2 border-amber-500 shadow-lg mb-3"
+                         onerror="this.src='https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=400&q=80'">
+                    <span class="bg-amber-500/20 text-amber-400 text-[10px] font-extrabold px-3 py-1 rounded uppercase tracking-wider border border-amber-500/30">Especialidad Oficial</span>
+                </div>
+                <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                    <p>
+                        Las <strong>Pruebas de Evaluación Agronómica (PEA)</strong> representan un requisito riguroso para la inscripción y validación oficial de nuevos genotipos y variedades ante entidades gubernamentales.
+                    </p>
+                    <p class="text-xs text-slate-400 font-semibold border-l-2 border-amber-500 pl-3 italic">
+                        "Dirección, ejecución y registro oficial de Pruebas de Evaluación Agronómica (PEA) para la validación de materiales de alta calidad vegetal."
+                    </p>
+                    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 mt-2">
+                        <h4 class="font-bold text-sky-400 mb-2 text-xs uppercase tracking-wider">Servicios Especializados:</h4>
+                        <ul class="list-disc list-inside space-y-1.5 text-xs text-slate-300">
+                            <li>Dirección técnica del protocolo experimental de campo.</li>
+                            <li>Validación de adaptabilidad y resistencia a plagas limitantes.</li>
+                            <li>Generación de reportes de sacarosa y TCH.</li>
+                            <li>Trámite y asesoría documental completa para registros regulatorios.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP / MODAL DE MANEJO INTEGRADO DE PLAGAS Y ENFERMEDADES (MIPE) -->
+    <div id="mip-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-header-title">Manejo Integrado (MIPE)</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body text-slate-200">
+                <div class="flex flex-col items-center text-center mb-5">
+                    <img src="mip.jpg" 
+                         alt="Manejo Integrado de Plagas y Enfermedades" 
+                         class="w-24 h-24 rounded-2xl object-cover border-2 border-emerald-500 shadow-lg mb-3"
+                         onerror="this.src='https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=400&q=80'">
+                    <span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-3 py-1 rounded uppercase tracking-wider border border-emerald-500/30">Control Biológico y Técnico</span>
+                </div>
+                <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                    <p>
+                        El <strong>Manejo Integrado de Plagas y Enfermedades (MIPE)</strong> es un enfoque preventivo, holístico y técnico diseñado para mitigar daños económicos en los cultivos, priorizando la sostenibilidad del agroecosistema.
+                    </p>
+                    <p class="text-xs text-slate-400 font-semibold border-l-2 border-emerald-500 pl-3 italic">
+                        "Estrategias preventivas y de control biológico/químico inteligente para mitigar daños a los cultivos de manera sostenible."
+                    </p>
+                    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 mt-2">
+                        <h4 class="font-bold text-sky-400 mb-2 text-xs uppercase tracking-wider">Estrategias y Métodos:</h4>
+                        <ul class="list-disc list-inside space-y-1.5 text-xs text-slate-300">
+                            <li>Monitoreo y muestreo sistemático de insectos plaga y patógenos.</li>
+                            <li>Priorización del control biológico mediante liberación de parasitoides o microorganismos benéficos.</li>
+                            <li>Aplicación precisa y selectiva de productos químicos y biológicos autorizados.</li>
+                            <li>Prácticas culturales idóneas para evitar la propagación y fortalecimiento de plagas.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP / MODAL DE NUTRICIÓN VEGETAL Y SUELOS -->
+    <div id="nvs-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-header-title">Nutrición y Suelos</h2>
+                <button class="modal-close-btn" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <div class="modal-body text-slate-200">
+                <div class="flex flex-col items-center text-center mb-5">
+                    <img src="nvys.jpg" 
+                         alt="Nutrición Vegetal y Suelos" 
+                         class="w-24 h-24 rounded-2xl object-cover border-2 border-emerald-500 shadow-lg mb-3"
+                         onerror="this.src='https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=400&q=80'">
+                    <span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-3 py-1 rounded uppercase tracking-wider border border-emerald-500/30">Diagnóstico y Fertilización</span>
+                </div>
+                <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+                    <p>
+                        El programa de <strong>Nutrición Vegetal y Suelos</strong> se enfoca en maximizar la productividad de la planta optimizando la salud química y física del suelo de cultivo.
+                    </p>
+                    <p class="text-xs text-slate-400 font-semibold border-l-2 border-emerald-500 pl-3 italic">
+                        "Análisis e interpretación de suelo y tejido foliar con planes de fertilización balanceada de alta eficiencia adaptados a cada finca."
+                    </p>
+                    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 mt-2">
+                        <h4 class="font-bold text-sky-400 mb-2 text-xs uppercase tracking-wider">Líneas de Trabajo:</h4>
+                        <ul class="list-disc list-inside space-y-1.5 text-xs text-slate-300">
+                            <li>Interpretación avanzada de análisis de suelo y tejido foliar.</li>
+                            <li>Formulación de fertilización de precisión (Nitrógeno, Fósforo, Potasio y microelementos).</li>
+                            <li>Monitoreo de conductividad eléctrica y pH en campo.</li>
+                            <li>Recomendaciones de enmiendas orgánicas y correctivos de acidez.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Elemento flotante Toast para alertas rápidas en pantalla -->
+    <div id="toast"><i class="fas fa-info-circle text-amber-400"></i> <span id="toast-message">Copiado</span></div>
+
+    <script>
+        // --- FUNCIÓN DE TOAST NOTIFICACIÓN ---
+        const showToast = (message) => {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.textContent = message;
+            toast.className = 'show';
+            setTimeout(() => {
+                toast.className = '';
+            }, 2500);
+        };
+
+        // --- MANEJADOR DE MODALES GENÉRICOS ---
+        const setupModal = (btnId, modalId) => {
+            const btn = document.getElementById(btnId);
+            const modal = document.getElementById(modalId);
+            if (!btn || !modal) return;
+
+            const openModal = () => modal.classList.add('active');
+            const closeModal = () => modal.classList.remove('active');
+
+            btn.addEventListener('click', openModal);
+            
+            const closeBtn = modal.querySelector('.modal-close-btn');
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+        };
+
+        // Configuración activa de modales estáticos
+        setupModal('horario-btn', 'horario-modal');
+        setupModal('install-btn', 'install-modal');
+        setupModal('qr-code-btn', 'qr-code-modal');
+        setupModal('pea-btn', 'pea-modal'); 
+        setupModal('atc-btn', 'atc-modal'); 
+        setupModal('mip-btn', 'mip-modal'); 
+        setupModal('nvs-btn', 'nvs-modal'); 
+        setupModal('mg-btn', 'mg-modal');   
+
+        // --- LÓGICA DE GUARDAR CONTACTO (Generador y Descargador de vCard) ---
+        const saveContactBtn = document.getElementById('save-contact-btn');
+        if (saveContactBtn) {
+            saveContactBtn.addEventListener('click', () => {
+                try {
+                    // Contenido vCard alineado con las especificaciones del Dr. Carlos Viveros
+                    const vCard = [
+                        "BEGIN:VCARD",
+                        "VERSION:3.0",
+                        "FN:Dr. Carlos Arturo Viveros Valens",
+                        "ORG:Consultoría Agronómica y Mejoramiento Genético",
+                        "TITLE:Ingeniero Agrónomo\\, M. Sc\\, Ph. D.",
+                        "TEL;TYPE=CELL,VOICE;VALUE=uri:tel:+573137910897",
+                        "EMAIL;TYPE=PREF,INTERNET:caviverosv@gmail.com",
+                        "NOTE:La inteligencia humana y la ciencia del mejoramiento de las plantas al servicio de la agricultura.",
+                        "END:VCARD"
+                    ].join("\n");
+
+                    const blob = new Blob([vCard], { type: "text/vcard;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = "Dr_Carlos_Arturo_Viveros.vcf";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    showToast("Contacto descargado. Ábrelo para guardar.");
+                } catch (e) {
+                    showToast("Hubo un error al exportar el contacto.");
+                }
+            });
+        }
+
+        // --- LÓGICA DE COMPARTIR TARJETA (Web Share API con fallback a portapapeles) ---
+        const shareBtn = document.getElementById('share-card-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => {
+                const currentUrl = window.location.href;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Tarjeta Digital - Dr. Carlos Arturo Viveros',
+                        text: 'Te comparto la tarjeta digital del Dr. Carlos Arturo Viveros Valens, Agrónomo, M. Sc, Ph. D.',
+                        url: currentUrl
+                    }).then(() => {
+                        showToast("¡Tarjeta compartida con éxito!");
+                    }).catch(() => {
+                        // Acción omitida o cancelada por el usuario
+                    });
+                } else {
+                    // Copiar enlace por compatibilidad en navegadores antiguos o iFrames
+                    const tempInput = document.createElement('input');
+                    tempInput.value = currentUrl;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    showToast("Enlace de tarjeta copiado.");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

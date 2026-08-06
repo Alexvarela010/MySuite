@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="ribbon.donotopen">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/vendor/phpoffice/phpspreadsheet/tests/data/Reader/XLSX/ribbon.donotopen.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
