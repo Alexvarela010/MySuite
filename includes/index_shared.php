@@ -5671,7 +5671,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
             statusEl.textContent = translations.reviews.loading;
         }
 
-        fetch('../app/api/public/get_google_reviews.php?limit=9', {
+        fetch('../app/api/public/get_google_reviews.php?all=1', {
             method: 'GET',
             cache: 'no-store'
         })

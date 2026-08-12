@@ -7,7 +7,7 @@
 require_once __DIR__ . '/google_reviews_service.php';
 
 $service = new GoogleReviewsService();
-$result = $service->getReviews(true, 10);
+$result = $service->getReviews(true, -1);
 
 if (!empty($result['success'])) {
     echo "Cache de resenas actualizado. Fuente: " . ($result['source'] ?? 'google') . PHP_EOL;

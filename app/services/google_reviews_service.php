@@ -24,21 +24,25 @@ class GoogleReviewsService
         $cache = $this->readCache();
 
         if (!$forceRefresh && $cache && !$this->isCacheExpired($cache['fetched_at'] ?? null)) {
-            return $this->buildSuccessResponse('cache', $cache['reviews'], $cache['fetched_at']);
+            $reviews = $this->applyLimit($cache['reviews'], $limit);
+            return $this->buildSuccessResponse('cache', $reviews, $cache['fetched_at']);
         }
 
-        $fresh = $this->fetchFromGoogle($limit);
+        // Siempre fetch ALL desde Google, sin aplicar limit
+        $fresh = $this->fetchFromGoogle();
         if ($fresh['success']) {
             $payload = [
                 'fetched_at' => gmdate('c'),
-                'reviews' => $fresh['reviews'],
+                'reviews' => $fresh['reviews'],  // Guarda TODAS las reseñas en caché
             ];
             $this->writeCache($payload);
-            return $this->buildSuccessResponse('google', $payload['reviews'], $payload['fetched_at']);
+            $reviews = $this->applyLimit($payload['reviews'], $limit);
+            return $this->buildSuccessResponse('google', $reviews, $payload['fetched_at']);
         }
 
         if ($cache && !empty($cache['reviews'])) {
-            $response = $this->buildSuccessResponse('stale_cache', $cache['reviews'], $cache['fetched_at']);
+            $reviews = $this->applyLimit($cache['reviews'], $limit);
+            $response = $this->buildSuccessResponse('stale_cache', $reviews, $cache['fetched_at']);
             $response['warning'] = 'No se pudo actualizar desde Google, se sirve cache anterior.';
             return $response;
         }
@@ -52,13 +56,25 @@ class GoogleReviewsService
 
     private function sanitizeLimit($limit)
     {
+        // Si limit es -1 o 'all', trae todas las reseñas
+        if ($limit === -1 || $limit === 'all') {
+            return -1;
+        }
         if ($limit === null || (int)$limit <= 0) {
             $limit = (int)($this->config['default_limit'] ?? 6);
         }
-        return max(1, min(12, (int)$limit));
+        return max(1, (int)$limit);
     }
 
-    private function fetchFromGoogle($limit)
+    private function applyLimit($reviews, $limit)
+    {
+        if ($limit === -1 || $limit === 'all') {
+            return $reviews;
+        }
+        return array_slice($reviews, 0, $limit);
+    }
+
+    private function fetchFromGoogle()
     {
         $required = ['client_id', 'client_secret', 'refresh_token', 'account_id', 'location_id'];
         foreach ($required as $key) {
@@ -78,39 +94,58 @@ class GoogleReviewsService
             ];
         }
 
-        $url = sprintf(
-            'https://mybusiness.googleapis.com/v4/accounts/%s/locations/%s/reviews?pageSize=%d',
-            rawurlencode($this->config['account_id']),
-            rawurlencode($this->config['location_id']),
-            (int)$limit
-        );
-
-        $response = $this->curlRequest($url, 'GET', null, [
-            'Authorization: Bearer ' . $tokenResult['access_token'],
-            'Accept: application/json',
-        ]);
-
-        if (!$response['success']) {
-            return [
-                'success' => false,
-                'message' => 'Error consultando resenas: ' . $response['message'],
-            ];
-        }
-
-        $data = json_decode($response['body'], true);
-        if (!is_array($data)) {
-            return [
-                'success' => false,
-                'message' => 'Respuesta invalida desde Google Reviews API.',
-            ];
-        }
-
         $reviews = [];
-        if (!empty($data['reviews']) && is_array($data['reviews'])) {
-            foreach ($data['reviews'] as $review) {
-                $reviews[] = $this->normalizeReview($review);
+        $pageToken = null;
+        $pageSize = 50; // Máximo permitido por Google
+
+        do {
+            $url = sprintf(
+                'https://mybusiness.googleapis.com/v4/accounts/%s/locations/%s/reviews?pageSize=%d',
+                rawurlencode($this->config['account_id']),
+                rawurlencode($this->config['location_id']),
+                $pageSize
+            );
+
+            if ($pageToken) {
+                $url .= '&pageToken=' . urlencode($pageToken);
             }
-        }
+
+            $response = $this->curlRequest($url, 'GET', null, [
+                'Authorization: Bearer ' . $tokenResult['access_token'],
+                'Accept: application/json',
+            ]);
+
+            if (!$response['success']) {
+                // Si ya tenemos reseñas, retornamos las que traimos
+                if (!empty($reviews)) {
+                    break;
+                }
+                return [
+                    'success' => false,
+                    'message' => 'Error consultando resenas: ' . $response['message'],
+                ];
+            }
+
+            $data = json_decode($response['body'], true);
+            if (!is_array($data)) {
+                if (empty($reviews)) {
+                    return [
+                        'success' => false,
+                        'message' => 'Respuesta invalida desde Google Reviews API.',
+                    ];
+                }
+                break;
+            }
+
+            if (!empty($data['reviews']) && is_array($data['reviews'])) {
+                foreach ($data['reviews'] as $review) {
+                    $reviews[] = $this->normalizeReview($review);
+                }
+            }
+
+            $pageToken = $data['nextPageToken'] ?? null;
+
+        } while ($pageToken);
 
         usort($reviews, function ($a, $b) {
             return strcmp($b['created_at'], $a['created_at']);
@@ -118,7 +153,7 @@ class GoogleReviewsService
 
         return [
             'success' => true,
-            'reviews' => array_slice($reviews, 0, $limit),
+            'reviews' => $reviews,
             'message' => '',
         ];
     }
