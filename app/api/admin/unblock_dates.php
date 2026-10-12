@@ -4,15 +4,8 @@
  * Sistema de Reservas - My Suite In Cartagena
  */
 
-session_start();
-
-// Verificar si el usuario está logueado como admin
-if (!((isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) ||
-    (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true && 
-     isset($_SESSION['user_rol']) && $_SESSION['user_rol'] === 'admin'))) {
-    echo json_encode(['success' => false, 'message' => 'No autorizado']);
-    exit;
-}
+require_once __DIR__ . '/../../../includes/auth_helper.php';
+AuthHelper::requireModule('calendario');
 
 require_once __DIR__ . '/../../../config/database.php';
 

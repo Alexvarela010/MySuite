@@ -4,15 +4,8 @@
  * My Suite In Cartagena
  */
 
-session_start();
-
-// Verificar si el usuario está logueado como admin
-if (!((isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) ||
-        (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true &&
-                isset($_SESSION['user_rol']) && $_SESSION['user_rol'] === 'admin'))) {
-    header('Location: ../../../app/controllers/auth/login.php');
-    exit;
-}
+require_once __DIR__ . '/../../../includes/auth_helper.php';
+AuthHelper::requireModule('calendario');
 
 require_once __DIR__ . '/../../../config/database.php';
 require_once __DIR__ . '/../../../includes/functions.php';
@@ -477,75 +470,8 @@ require_once __DIR__ . '/../../../includes/functions.php';
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-            <div class="position-sticky pt-3 sidebar-sticky">
-                <h4 class="sidebar-heading">
-                    <i class="fas fa-plane me-2"></i>
-                    Admin Panel
-                </h4>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">
-                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="reservas.php">
-                            <i class="fas fa-calendar-check me-2"></i> Reservas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="calendario.php">
-                            <i class="fas fa-calendar-alt me-2"></i> Calendario
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="usuarios.php">
-                            <i class="fas fa-users me-2"></i> Usuarios Registrados
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="tarifas.php">
-                            <i class="fas fa-dollar-sign me-2"></i> Tarifas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin/manillas.php">
-                            <i class="fas fa-ring me-2"></i> Manillas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin/servicios_adicionales.php">
-                            <i class="fas fa-plus me-2"></i> Servicios adicionales
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin/manillas.php">
-                            <i class="fas fa-ring me-2"></i> Manillas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin/servicios_adicionales.php">
-                            <i class="fas fa-plus me-2"></i> Servicios adicionales
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="descuentos.php">
-                            <i class="fas fa-percentage me-2"></i> Descuentos
-                        </a>
-                    </li>
-                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
-                        <span>Enlaces</span>
-                    </h6>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/index.php?lang=en" target="_blank">
-                            <i class="fas fa-external-link-alt me-2"></i> Ver Sitio Web
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+        <!-- Sidebar Dinámico RBAC -->
+        <?php AuthHelper::renderSidebar('calendario'); ?>
 
         <!-- Main Content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
@@ -885,7 +811,9 @@ require_once __DIR__ . '/../../../includes/functions.php';
 
     // Cargar clientes de Palmira
     function loadPalmiraClients() {
-        fetch('../../../app/api/admin/get_palmira_clients.php')
+        fetch('/app/api/admin/get_palmira_clients.php', {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
             .then(response => response.json())
             .then(data => {
                 const tbody = document.querySelector('#palmiraTable tbody');
@@ -916,7 +844,9 @@ require_once __DIR__ . '/../../../includes/functions.php';
 
     // Cargar todos los clientes
     function loadAllClients() {
-        fetch('../../../app/api/admin/get_all_clients.php')
+        fetch('/app/api/admin/get_all_clients.php', {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
             .then(response => response.json())
             .then(data => {
                 const tbody = document.querySelector('#clientsTable tbody');
@@ -1025,8 +955,9 @@ require_once __DIR__ . '/../../../includes/functions.php';
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Bloqueando...';
         submitBtn.disabled = true;
 
-        fetch('../../../app/api/admin/block_dates.php', {
+        fetch('/app/api/admin/block_dates.php', {
             method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: formData
         })
             .then(response => response.json())
@@ -1068,7 +999,9 @@ require_once __DIR__ . '/../../../includes/functions.php';
             return;
         }
 
-        fetch(`search_clients.php?q=${encodeURIComponent(searchTerm)}`)
+        fetch(`/app/api/admin/search_clients.php?q=${encodeURIComponent(searchTerm)}`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
             .then(response => response.json())
             .then(data => {
                 const tbody = document.querySelector('#clientsTable tbody');
@@ -1157,7 +1090,9 @@ require_once __DIR__ . '/../../../includes/functions.php';
 
     // Cargar detalles del cliente
     function loadClientDetails(clientId) {
-        fetch(`get_client_details.php?id=${clientId}`)
+        fetch(`/app/api/admin/get_client_details.php?id=${clientId}`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
             .then(response => response.json())
             .then(data => {
                 const content = document.getElementById('clientDetailsContent');
@@ -1338,45 +1273,51 @@ require_once __DIR__ . '/../../../includes/functions.php';
                 blockedDates = data.blocked_dates || [];
                 renderCalendar();
                 updateStats();
-                // Prefetch siguiente mes en background
                 prefetchMonth(currentDate.getFullYear(), currentDate.getMonth() + 1);
                 return Promise.resolve(data);
             }
 
-            const url = `../../../app/api/admin/get_calendar_data.php?month=${currentDate.getMonth()}&year=${currentDate.getFullYear()}&apartamento_id=${apartamentoId}`;
-            return fetch(url)
-                .then(response => response.json())
+            const url = `/app/api/admin/get_calendar_data.php?month=${currentDate.getMonth()}&year=${currentDate.getFullYear()}&apartamento_id=${apartamentoId}`;
+            return fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    return response.text().then(text => {
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            console.error('Respuesta no JSON del servidor:', text);
+                            throw new Error('Respuesta inválida del servidor al cargar el calendario');
+                        }
+                    });
+                })
                 .then(data => {
-                    if (data.success) {
+                    if (data && data.success) {
                         reservations = data.reservations || [];
                         blockedDates = data.blocked_dates || [];
                         // Guardar en cache de sesión
                         calendarDataCache[key] = data;
-
-                        // Debug: verificar reservas abonadas
-                        console.log('Total de reservas cargadas:', reservations.length);
-                        const abonadas = reservations.filter(res => {
-                            const estado = (res.estado || '').toLowerCase();
-                            return estado === 'abonada';
-                        });
-                        if (abonadas.length > 0) {
-                            console.log('Reservas abonadas encontradas:', abonadas);
-                        } else {
-                            console.log('No se encontraron reservas abonadas. Estados encontrados:', 
-                                reservations.map(r => ({ id: r.id_reserva, estado: r.estado })));
-                        }
 
                         renderCalendar();
                         updateStats();
 
                         // Prefetch siguiente mes en background
                         prefetchMonth(currentDate.getFullYear(), currentDate.getMonth() + 1);
+                    } else {
+                        console.warn('Advertencia al cargar calendario:', data ? data.message : 'Sin datos');
+                        renderCalendar();
+                        updateStats();
                     }
                     return data;
                 })
                 .catch(error => {
                     console.error('Error al cargar datos del calendario:', error);
-                    throw error;
+                    // Renderizar de todos modos para que el calendario no quede en blanco
+                    renderCalendar();
+                    updateStats();
                 });
         }
 
@@ -1386,9 +1327,14 @@ require_once __DIR__ . '/../../../includes/functions.php';
             const y = month0Based < 0 ? year - 1 : (month0Based > 11 ? year + 1 : year);
             const key = `${y}-${m}-${apartamentoId}`;
             if (calendarDataCache[key]) return;
-            const url = `../../../app/api/admin/get_calendar_data.php?month=${m}&year=${y}&apartamento_id=${apartamentoId}`;
-            fetch(url)
-                .then(r => r.json())
+            const url = `/app/api/admin/get_calendar_data.php?month=${m}&year=${y}&apartamento_id=${apartamentoId}`;
+            fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(r => r.ok ? r.json() : null)
                 .then(data => {
                     if (data && data.success) {
                         calendarDataCache[key] = data;
@@ -1940,8 +1886,9 @@ require_once __DIR__ . '/../../../includes/functions.php';
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Bloqueando...';
         submitBtn.disabled = true;
 
-        fetch('../../../app/api/admin/block_dates.php', {
+        fetch('/app/api/admin/block_dates.php', {
             method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: formData
         })
             .then(response => response.json())
@@ -1985,8 +1932,9 @@ require_once __DIR__ . '/../../../includes/functions.php';
         const formData = new FormData();
         formData.append('date', dateString);
 
-        fetch('../../../app/api/admin/unblock_dates.php', {
+        fetch('/app/api/admin/unblock_dates.php', {
             method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: formData
         })
             .then(response => response.json())

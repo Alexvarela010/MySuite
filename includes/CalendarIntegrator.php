@@ -45,22 +45,55 @@ class CalendarIntegrator {
             error_log('Error al leer cache iCal: ' . $e->getMessage());
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // Follow redirects
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10); // Set a timeout for the request
+        $data = false;
+        $httpCode = 0;
+        $error = '';
 
-        $data = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
+        try {
+            if (function_exists('curl_init')) {
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; MySuiteBot/1.0)');
+
+                $data = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                if (PHP_VERSION_ID < 80500) {
+                    @curl_close($ch);
+                }
+            } else {
+                // Fallback usando file_get_contents con stream_context
+                $ctx = stream_context_create([
+                    'http' => [
+                        'method' => 'GET',
+                        'timeout' => 10,
+                        'follow_location' => 1,
+                        'header' => "User-Agent: Mozilla/5.0 (compatible; MySuiteBot/1.0)\r\n"
+                    ],
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                    ]
+                ]);
+                $data = @file_get_contents($url, false, $ctx);
+                $httpCode = ($data !== false) ? 200 : 500;
+            }
+        } catch (\Throwable $t) {
+            error_log("Exception while fetching iCal from $url: " . $t->getMessage());
+            $data = false;
+        }
 
         if ($httpCode >= 200 && $httpCode < 300 && $data !== false) {
             // Guardar en cache (no crítico)
             try {
-                @file_put_contents($cacheFile, $data);
-            } catch (Exception $e) {
+                if (isset($cacheFile)) {
+                    @file_put_contents($cacheFile, $data);
+                }
+            } catch (\Throwable $e) {
                 error_log('Error al escribir cache iCal: ' . $e->getMessage());
             }
             return $data;
@@ -99,14 +132,16 @@ class CalendarIntegrator {
                     $currentEvent = null;
                 }
             } elseif ($currentEvent !== null) {
-                if (str_starts_with($line, 'DTSTART;VALUE=DATE:')) {
-                    $currentEvent['DTSTART'] = substr($line, strlen('DTSTART;VALUE=DATE:'));
-                } elseif (str_starts_with($line, 'DTEND;VALUE=DATE:')) {
-                    $currentEvent['DTEND'] = substr($line, strlen('DTEND;VALUE=DATE:'));
-                } elseif (str_starts_with($line, 'SUMMARY:')) {
-                    $currentEvent['SUMMARY'] = substr($line, strlen('SUMMARY:'));
-                } elseif (str_starts_with($line, 'UID:')) {
-                    $currentEvent['UID'] = substr($line, strlen('UID:'));
+                if (preg_match('/^DTSTART(?:;[^:]*)?:(.*)$/i', $line, $matches)) {
+                    $currentEvent['DTSTART'] = trim($matches[1]);
+                } elseif (preg_match('/^DTEND(?:;[^:]*)?:(.*)$/i', $line, $matches)) {
+                    $currentEvent['DTEND'] = trim($matches[1]);
+                } elseif (preg_match('/^SUMMARY:(.*)$/i', $line, $matches)) {
+                    $currentEvent['SUMMARY'] = trim($matches[1]);
+                } elseif (preg_match('/^UID:(.*)$/i', $line, $matches)) {
+                    $currentEvent['UID'] = trim($matches[1]);
+                } elseif (preg_match('/^DESCRIPTION:(.*)$/i', $line, $matches)) {
+                    $currentEvent['DESCRIPTION'] = trim($matches[1]);
                 }
             }
         }
@@ -122,17 +157,32 @@ class CalendarIntegrator {
     public function getOccupiedDates(array $icalEvents): array {
         $occupiedDates = [];
         foreach ($icalEvents as $event) {
-            if (isset($event['DTSTART']) && isset($event['DTEND'])) {
+            if (isset($event['DTSTART']) && !empty($event['DTSTART'])) {
                 try {
                     $startDate = new DateTime($event['DTSTART']);
-                    // DTEND in iCal is exclusive, so subtract one day to get the last occupied day
-                    $endDate = new DateTime($event['DTEND']);
-                    $endDate->modify('-1 day');
+                    $startDay = $startDate->format('Y-m-d');
 
-                    $currentDate = clone $startDate;
-                    while ($currentDate <= $endDate) {
-                        $occupiedDates[] = $currentDate->format('Y-m-d');
-                        $currentDate->modify('+1 day');
+                    if (isset($event['DTEND']) && !empty($event['DTEND'])) {
+                        $endDate = new DateTime($event['DTEND']);
+                        $endDay = $endDate->format('Y-m-d');
+
+                        // Si DTSTART y DTEND son el mismo día (ej. bloqueo de un solo día en Forever Summer)
+                        if ($startDay === $endDay) {
+                            $occupiedDates[] = $startDay;
+                        } elseif ($startDate < $endDate) {
+                            // DTEND en iCal estándar para estancias multi-día es exclusivo
+                            $endDate->modify('-1 day');
+                            $currentDate = clone $startDate;
+                            while ($currentDate <= $endDate) {
+                                $occupiedDates[] = $currentDate->format('Y-m-d');
+                                $currentDate->modify('+1 day');
+                            }
+                        } else {
+                            $occupiedDates[] = $startDay;
+                        }
+                    } else {
+                        // Evento de un solo día sin DTEND explícito
+                        $occupiedDates[] = $startDay;
                     }
                 } catch (Exception $e) {
                     error_log("Error parsing date for event: " . $e->getMessage() . " Event: " . json_encode($event));

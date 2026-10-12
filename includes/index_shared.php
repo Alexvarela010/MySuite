@@ -150,7 +150,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                             <!-- <li><a href="../tarifas.php">Testimonios</a></li> -->
                             <li><a href="../contactenos.php"><?php echo __('nav.contact'); ?></a></li>
                             <?php if ($user_logged_in): ?>
-                                <?php if ($user_role === 'admin'): ?>
+                                <?php if ($user_role === 'admin' || $user_role === 'operador'): ?>
                                     <li><a href="../admin/index.php" style="color:rgb(255, 255, 255); ">
                                             Panel
                                         </a></li>

@@ -39,9 +39,8 @@ I18n::init($lang);
 
 // Verificar si ya está logueado
 if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) {
-    // Si es admin, redirigir al panel
-    if (isset($_SESSION['user_rol']) && $_SESSION['user_rol'] === 'admin') {
-        header('Location: ../../app/views/admin/index.php');
+    if (isset($_SESSION['user_rol']) && in_array($_SESSION['user_rol'], ['admin', 'operador'])) {
+        header('Location: /admin/index.php');
         exit;
     } else {
         // Si es cliente, redirigir al calendario del idioma correspondiente (ruta absoluta)

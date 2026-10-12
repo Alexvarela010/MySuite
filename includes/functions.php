@@ -72,7 +72,7 @@ function getFechasOcupadasIcal($apartamento_id = 1, $fechaInicio = null, $fechaF
             }
 
             $occupiedDates = array_merge($occupiedDates, $dates);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             error_log('Error al procesar feed iCal (' . $url . '): ' . $e->getMessage());
         }
     }

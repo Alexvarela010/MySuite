@@ -21,7 +21,7 @@ CREATE TABLE usuarios (
   telefono VARCHAR(20),
   ciudad VARCHAR(100) DEFAULT 'Cartagena',
   fecha_nacimiento DATE,
-  rol ENUM('admin','cliente') DEFAULT 'cliente',
+  rol ENUM('admin','operador','cliente') DEFAULT 'cliente',
   login_method VARCHAR(50),
   creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -231,3 +231,42 @@ FROM (
     CROSS JOIN (SELECT 0 AS N UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) c
 ) numbers
 WHERE n < 365;
+
+-- ==========================================================
+-- TABLA: contabilidad_categorias (catálogo de categorías)
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS contabilidad_categorias (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    tipo ENUM('entrada', 'salida') NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(255) NULL,
+    orden INT DEFAULT 0,
+    activo TINYINT(1) DEFAULT 1,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_tipo_nombre (tipo, nombre)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ==========================================================
+-- TABLA: contabilidad_movimientos (ingresos y gastos)
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS contabilidad_movimientos (
+    id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
+    tipo ENUM('entrada', 'salida') NOT NULL,
+    fecha DATE NOT NULL,
+    categoria VARCHAR(100) NOT NULL,
+    monto DECIMAL(12,2) NOT NULL,
+    metodo_pago VARCHAR(50) NOT NULL DEFAULT 'EFECTIVO',
+    responsable VARCHAR(100) NULL,
+    descripcion TEXT NULL,
+    comprobante_numero VARCHAR(100) NULL,
+    id_reserva INT NULL,
+    creado_por VARCHAR(150) NULL,
+    activo TINYINT(1) DEFAULT 1,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_fecha (fecha),
+    INDEX idx_tipo (tipo),
+    INDEX idx_categoria (categoria),
+    INDEX idx_activo (activo),
+    INDEX idx_reserva (id_reserva)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

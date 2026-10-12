@@ -4,19 +4,16 @@
  * Sistema de Reservas - My Suite In Cartagena
  */
 
-session_start();
-
-// Verificar si el usuario está logueado como admin
-if (!((isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) ||
-    (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true && 
-     isset($_SESSION['user_rol']) && $_SESSION['user_rol'] === 'admin'))) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'No autorizado']);
-    exit;
-}
+require_once __DIR__ . '/../../../includes/auth_helper.php';
+AuthHelper::requireModule('calendario');
 
 require_once __DIR__ . '/../../../config/database.php';
 require_once __DIR__ . '/../../../includes/functions.php';
+
+// Asegurar que warnings o notices no corrompan la respuesta JSON
+error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE);
+ini_set('display_errors', 0);
+ob_start();
 
 header('Content-Type: application/json');
 
@@ -100,7 +97,9 @@ try {
             'origen' => 'ical'
         ];
     }
-    
+    if (ob_get_length()) {
+        ob_clean();
+    }
     echo json_encode([
         'success' => true,
         'reservations' => $reservations,
@@ -109,10 +108,13 @@ try {
         'year' => $year
     ]);
     
-} catch (Exception $e) {
+} catch (\Throwable $e) {
+    if (ob_get_length()) {
+        ob_clean();
+    }
     echo json_encode([
         'success' => false,
-        'message' => 'Error de base de datos: ' . $e->getMessage()
+        'message' => 'Error: ' . $e->getMessage()
     ]);
 }
 ?>

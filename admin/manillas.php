@@ -4,18 +4,8 @@
  * My Suite In Cartagena
  */
 
-session_start();
-
-// Verificar si el usuario está logueado como admin
-if ((isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) ||
-    (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true && 
-     isset($_SESSION['user_rol']) && $_SESSION['user_rol'] === 'admin')) {
-    // Usuario logueado correctamente, continuar
-} else {
-    // No está logueado, redirigir al login principal
-    header('Location: ../../app/controllers/auth/login.php');
-    exit;
-}
+require_once __DIR__ . '/../includes/auth_helper.php';
+AuthHelper::requireModule('manillas');
 
 require_once __DIR__ . '/../config/database.php';
 ?>
@@ -295,60 +285,8 @@ require_once __DIR__ . '/../config/database.php';
     
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-                <div class="position-sticky pt-3 sidebar-sticky">
-                    <h4 class="sidebar-heading">
-                        <i class="fas fa-plane me-2"></i>
-                        Admin Panel
-                    </h4>
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link" href="index.php">
-                                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="reservas.php">
-                                <i class="fas fa-calendar-check me-2"></i> Reservas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="calendario.php">
-                                <i class="fas fa-calendar-alt me-2"></i> Calendario
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="usuarios.php">
-                                <i class="fas fa-users me-2"></i> Usuarios Registrados
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="tarifas.php">
-                                <i class="fas fa-dollar-sign me-2"></i> Tarifas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="descuentos.php">
-                                <i class="fas fa-percentage me-2"></i> Descuentos
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="manillas.php">
-                                <i class="fas fa-bracelet me-2"></i> Manillas
-                            </a>
-                        </li>
-                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
-                            <span>Enlaces</span>
-                        </h6>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/index.php?lang=en" target="_blank">
-                                <i class="fas fa-external-link-alt me-2"></i> Ver Sitio Web
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <!-- Sidebar Dinámico RBAC -->
+            <?php AuthHelper::renderSidebar('manillas'); ?>
 
             <!-- Main Content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">

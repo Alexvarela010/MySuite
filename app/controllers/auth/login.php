@@ -106,7 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_lang'] = $lang;
                 
                 // Determinar URL de redirección (ruta absoluta desde la raíz)
-                $redirectUrl = '/index.php?lang=' . $lang;
+                $redirectUrl = $_SESSION['redirect_after_login'] ?? ('/index.php?lang=' . $lang);
+                unset($_SESSION['redirect_after_login']);
                 
                 // Si es administrador, establecer también la sesión de admin
                 if ($user['rol'] === 'admin') {
@@ -116,12 +117,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['admin_correo'] = $user['correo'];
                     
                     if ($isAjax) {
-                        // Devolver JSON para AJAX
                         header('Content-Type: application/json');
                         echo json_encode([
                             'success' => true,
                             'redirect' => $redirectUrl,
                             'message' => 'Login exitoso como administrador'
+                        ]);
+                        exit;
+                    } else {
+                        header('Location: ' . $redirectUrl);
+                        exit;
+                    }
+                } elseif ($user['rol'] === 'operador') {
+                    // Rol operador: personal de gestión de la suite
+                    $_SESSION['admin_logged_in'] = false;
+                    
+                    if ($isAjax) {
+                        header('Content-Type: application/json');
+                        echo json_encode([
+                            'success' => true,
+                            'redirect' => $redirectUrl,
+                            'message' => 'Login exitoso como operador de suite'
                         ]);
                         exit;
                     } else {

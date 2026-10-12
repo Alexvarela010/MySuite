@@ -95,12 +95,8 @@ function enviarEmailPagoConfirmado($reserva) {
 }
 
 
-// Verificar si el usuario está logueado como admin
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'No autorizado']);
-    exit;
-}
+require_once __DIR__ . '/../../../includes/auth_helper.php';
+AuthHelper::requireModule('reservas');
 
 require_once __DIR__ . '/../../../config/database.php';
 require_once __DIR__ . '/../../../includes/GmailSender.php';

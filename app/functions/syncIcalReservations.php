@@ -50,6 +50,9 @@ function _ical_sync_getFeedUrls(int $apartamento_id): array
 function _ical_sync_detectPlatform(string $url): string
 {
     $url_lower = strtolower($url);
+    if (str_contains($url_lower, 'foreversummer')) {
+        return 'foreversummer';
+    }
     if (str_contains($url_lower, 'airbnb')) {
         return 'airbnb';
     }
@@ -350,11 +353,12 @@ function syncIcalReservations(int $apartamento_id = 1): array
                 continue;
             }
 
-            // Descartar bloqueos genéricos sin rango real (misma fecha inicio y fin)
+            // Si la fecha de salida es igual a la de entrada (ej. Forever Summer bloqueos de 1 solo día),
+            // ajustar fecha_salida a +1 día para representar la noche de estadía/bloqueo en la BD
             if ($fecha_entrada === $fecha_salida) {
-                $result['omitidas']++;
-                $result['detalle'][] = "[SKIP] Evento con duración 0 días: {$fecha_entrada}";
-                continue;
+                $endDt = clone $startDt;
+                $endDt->modify('+1 day');
+                $fecha_salida = $endDt->format('Y-m-d');
             }
 
             $summary = $event['SUMMARY'] ?? '';
