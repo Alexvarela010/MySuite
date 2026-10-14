@@ -23,12 +23,20 @@ try {
         throw new Exception("Error de conexión a la base de datos.");
     }
 
+    // Seguridad: La exportación a Excel está reservada exclusivamente para administradores
+    if (!AuthHelper::isAdmin()) {
+        http_response_code(403);
+        echo "<h3>Acceso denegado</h3><p>La exportación de contabilidad a Excel está permitida únicamente para administradores.</p>";
+        exit;
+    }
+
     $filters = [
         'mes' => isset($_GET['mes']) && $_GET['mes'] !== '' ? (int)$_GET['mes'] : null,
         'anio' => isset($_GET['anio']) && $_GET['anio'] !== '' ? (int)$_GET['anio'] : null,
         'fecha_desde' => isset($_GET['fecha_desde']) && !empty($_GET['fecha_desde']) ? trim($_GET['fecha_desde']) : null,
         'fecha_hasta' => isset($_GET['fecha_hasta']) && !empty($_GET['fecha_hasta']) ? trim($_GET['fecha_hasta']) : null,
         'tipo' => isset($_GET['tipo']) && !empty($_GET['tipo']) ? trim($_GET['tipo']) : null,
+        'caja' => isset($_GET['caja']) && !empty($_GET['caja']) ? trim($_GET['caja']) : null,
         'categoria' => isset($_GET['categoria']) && !empty($_GET['categoria']) ? trim($_GET['categoria']) : null,
         'metodo_pago' => isset($_GET['metodo_pago']) && !empty($_GET['metodo_pago']) ? trim($_GET['metodo_pago']) : null,
         'responsable' => isset($_GET['responsable']) && !empty($_GET['responsable']) ? trim($_GET['responsable']) : null,
@@ -56,6 +64,9 @@ try {
     }
     if (!empty($filters['tipo'])) {
         $filenameParts[] = ucfirst($filters['tipo']);
+    }
+    if (!empty($filters['caja'])) {
+        $filenameParts[] = 'Caja_' . ucfirst(strtolower($filters['caja']));
     }
     $filename = implode('_', $filenameParts) . '.xlsx';
 

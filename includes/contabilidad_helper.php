@@ -70,6 +70,11 @@ class ContabilidadHelper {
         'Otro'
     ];
 
+    public static $default_cajas = [
+        'Evelyn',
+        'Carlos'
+    ];
+
     /**
      * Asegura que las tablas y categorías iniciales existan en la base de datos
      */
@@ -95,6 +100,7 @@ class ContabilidadHelper {
                     fecha DATE NOT NULL,
                     categoria VARCHAR(100) NOT NULL,
                     monto DECIMAL(12,2) NOT NULL,
+                    caja VARCHAR(50) NOT NULL DEFAULT 'Evelyn',
                     metodo_pago VARCHAR(50) NOT NULL DEFAULT 'EFECTIVO',
                     responsable VARCHAR(100) NULL,
                     descripcion TEXT NULL,
@@ -107,10 +113,21 @@ class ContabilidadHelper {
                     INDEX idx_fecha (fecha),
                     INDEX idx_tipo (tipo),
                     INDEX idx_categoria (categoria),
+                    INDEX idx_caja (caja),
                     INDEX idx_activo (activo),
                     INDEX idx_reserva (id_reserva)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             ");
+
+            // Auto-migración: asegurar que la columna 'caja' exista en contabilidad_movimientos
+            try {
+                $chkCol = $db->query("SHOW COLUMNS FROM contabilidad_movimientos LIKE 'caja'")->fetch();
+                if (!$chkCol) {
+                    $db->exec("ALTER TABLE contabilidad_movimientos ADD COLUMN caja VARCHAR(50) NOT NULL DEFAULT 'Evelyn' AFTER monto, ADD INDEX idx_caja (caja)");
+                }
+            } catch (\Throwable $eCol) {
+                // Se ignora si la tabla no existe aún o ya tiene el índice
+            }
 
             // Verificar si hay categorías cargadas
             $chk = $db->query("SELECT COUNT(*) FROM contabilidad_categorias")->fetchColumn();
@@ -236,6 +253,16 @@ class ContabilidadHelper {
             $params[] = trim($filters['responsable']);
         }
 
+        // Filtro por Caja (Evelyn / Carlos)
+        if (!empty($filters['caja']) && $filters['caja'] !== 'todas') {
+            $cajaFiltro = strcasecmp(trim($filters['caja']), 'Carlos') === 0 ? 'Carlos' : 'Evelyn';
+            if ($cajaFiltro === 'Carlos') {
+                $where[] = "m.caja = 'Carlos'";
+            } else {
+                $where[] = "(m.caja = 'Evelyn' OR m.caja IS NULL OR m.caja = '')";
+            }
+        }
+
         // Búsqueda de texto (descripción, comprobante, responsable, categoría)
         if (!empty($filters['search'])) {
             $term = '%' . trim($filters['search']) . '%';
@@ -253,7 +280,7 @@ class ContabilidadHelper {
     }
 
     /**
-     * Obtiene los totales acumulados (Entradas, Salidas, Balance) según los filtros aplicados
+     * Obtiene los totales acumulados (Entradas, Salidas, Balance, Saldo Caja Evelyn y Saldo Caja Carlos)
      */
     public static function getTotales(PDO $db, array $filters): array {
         self::ensureTablesExist($db);
@@ -264,6 +291,12 @@ class ContabilidadHelper {
             SELECT 
                 COALESCE(SUM(CASE WHEN m.tipo = 'entrada' THEN m.monto ELSE 0 END), 0) AS total_entradas,
                 COALESCE(SUM(CASE WHEN m.tipo = 'salida' THEN m.monto ELSE 0 END), 0) AS total_salidas,
+                COALESCE(SUM(CASE WHEN (m.caja = 'Evelyn' OR m.caja IS NULL OR m.caja = '') AND m.tipo = 'entrada' THEN m.monto 
+                                  WHEN (m.caja = 'Evelyn' OR m.caja IS NULL OR m.caja = '') AND m.tipo = 'salida' THEN -m.monto 
+                                  ELSE 0 END), 0) AS saldo_caja_evelyn_periodo,
+                COALESCE(SUM(CASE WHEN m.caja = 'Carlos' AND m.tipo = 'entrada' THEN m.monto 
+                                  WHEN m.caja = 'Carlos' AND m.tipo = 'salida' THEN -m.monto 
+                                  ELSE 0 END), 0) AS saldo_caja_carlos_periodo,
                 COUNT(*) AS total_registros
             FROM contabilidad_movimientos m
             WHERE {$clause['sql']}
@@ -271,7 +304,30 @@ class ContabilidadHelper {
 
         $stmt = $db->prepare($sql);
         $stmt->execute($clause['params']);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['total_entradas' => 0, 'total_salidas' => 0, 'total_registros' => 0];
+        $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [
+            'total_entradas' => 0, 
+            'total_salidas' => 0, 
+            'saldo_caja_evelyn_periodo' => 0,
+            'saldo_caja_carlos_periodo' => 0,
+            'total_registros' => 0
+        ];
+
+        // Obtener saldo acumulado total histórico para cada caja (independiente de filtros temporales)
+        $sqlCajasGlobal = "
+            SELECT 
+                COALESCE(SUM(CASE WHEN (m.caja = 'Evelyn' OR m.caja IS NULL OR m.caja = '') AND m.tipo = 'entrada' THEN m.monto 
+                                  WHEN (m.caja = 'Evelyn' OR m.caja IS NULL OR m.caja = '') AND m.tipo = 'salida' THEN -m.monto 
+                                  ELSE 0 END), 0) AS saldo_caja_evelyn_global,
+                COALESCE(SUM(CASE WHEN m.caja = 'Carlos' AND m.tipo = 'entrada' THEN m.monto 
+                                  WHEN m.caja = 'Carlos' AND m.tipo = 'salida' THEN -m.monto 
+                                  ELSE 0 END), 0) AS saldo_caja_carlos_global
+            FROM contabilidad_movimientos m
+            WHERE m.activo = 1
+        ";
+        $rowCajasGlobal = $db->query($sqlCajasGlobal)->fetch(PDO::FETCH_ASSOC) ?: [
+            'saldo_caja_evelyn_global' => 0, 
+            'saldo_caja_carlos_global' => 0
+        ];
 
         $entradas = (float)$row['total_entradas'];
         $salidas = (float)$row['total_salidas'];
@@ -281,7 +337,11 @@ class ContabilidadHelper {
             'total_entradas' => $entradas,
             'total_salidas' => $salidas,
             'balance_neto' => $balance,
-            'total_registros' => (int)$row['total_registros']
+            'total_registros' => (int)$row['total_registros'],
+            'saldo_caja_evelyn' => (float)$rowCajasGlobal['saldo_caja_evelyn_global'],
+            'saldo_caja_carlos' => (float)$rowCajasGlobal['saldo_caja_carlos_global'],
+            'saldo_caja_evelyn_periodo' => (float)$row['saldo_caja_evelyn_periodo'],
+            'saldo_caja_carlos_periodo' => (float)$row['saldo_caja_carlos_periodo']
         ];
     }
 
@@ -314,6 +374,7 @@ class ContabilidadHelper {
                 YEAR(m.fecha) AS anio,
                 m.categoria,
                 m.monto,
+                COALESCE(m.caja, 'Evelyn') AS caja,
                 m.metodo_pago,
                 m.responsable,
                 m.descripcion,
@@ -371,6 +432,9 @@ class ContabilidadHelper {
             throw new InvalidArgumentException("El monto debe ser un valor numérico positivo mayor a 0.");
         }
 
+        $cajaRaw = trim($data['caja'] ?? 'Evelyn');
+        $caja = (strcasecmp($cajaRaw, 'Carlos') === 0) ? 'Carlos' : 'Evelyn';
+
         $metodo_pago = trim($data['metodo_pago'] ?? 'EFECTIVO');
         if (empty($metodo_pago)) $metodo_pago = 'EFECTIVO';
 
@@ -390,6 +454,7 @@ class ContabilidadHelper {
                     fecha = ?,
                     categoria = ?,
                     monto = ?,
+                    caja = ?,
                     metodo_pago = ?,
                     responsable = ?,
                     descripcion = ?,
@@ -402,6 +467,7 @@ class ContabilidadHelper {
                 $fecha,
                 $categoria,
                 $monto,
+                $caja,
                 $metodo_pago,
                 $responsable,
                 $descripcion,
@@ -414,15 +480,16 @@ class ContabilidadHelper {
             // Insertar nuevo
             $stmt = $db->prepare("
                 INSERT INTO contabilidad_movimientos (
-                    tipo, fecha, categoria, monto, metodo_pago, responsable, 
+                    tipo, fecha, categoria, monto, caja, metodo_pago, responsable, 
                     descripcion, comprobante_numero, id_reserva, creado_por, activo
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
             ");
             $stmt->execute([
                 $tipo,
                 $fecha,
                 $categoria,
                 $monto,
+                $caja,
                 $metodo_pago,
                 $responsable,
                 $descripcion,

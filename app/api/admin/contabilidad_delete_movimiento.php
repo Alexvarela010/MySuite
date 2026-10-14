@@ -28,6 +28,11 @@ try {
         throw new Exception("Error de conexión a la base de datos.");
     }
 
+    if (!AuthHelper::isAdmin()) {
+        http_response_code(403);
+        throw new Exception("Acceso denegado: solo los administradores pueden eliminar movimientos contables.");
+    }
+
     $rawInput = file_get_contents('php://input');
     $jsonData = json_decode($rawInput, true);
     $data = is_array($jsonData) ? $jsonData : $_POST;

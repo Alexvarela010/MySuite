@@ -255,6 +255,7 @@ CREATE TABLE IF NOT EXISTS contabilidad_movimientos (
     fecha DATE NOT NULL,
     categoria VARCHAR(100) NOT NULL,
     monto DECIMAL(12,2) NOT NULL,
+    caja VARCHAR(50) NOT NULL DEFAULT 'Evelyn',
     metodo_pago VARCHAR(50) NOT NULL DEFAULT 'EFECTIVO',
     responsable VARCHAR(100) NULL,
     descripcion TEXT NULL,
@@ -267,6 +268,7 @@ CREATE TABLE IF NOT EXISTS contabilidad_movimientos (
     INDEX idx_fecha (fecha),
     INDEX idx_tipo (tipo),
     INDEX idx_categoria (categoria),
+    INDEX idx_caja (caja),
     INDEX idx_activo (activo),
     INDEX idx_reserva (id_reserva)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

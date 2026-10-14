@@ -57,7 +57,7 @@ class SimpleXlsxWriter {
         $sheetXml .= '    <sheetView tabSelected="1" workbookViewId="0" showGridLines="1"/>' . "\n";
         $sheetXml .= '  </sheetViews>' . "\n";
         
-        // Configurar anchos de columna
+        // Configurar anchos de columna (16 columnas de A a P)
         $sheetXml .= '  <cols>' . "\n";
         $colWidths = [
             1 => 10,  // A: ID
@@ -66,15 +66,16 @@ class SimpleXlsxWriter {
             4 => 13,  // D: Mes
             5 => 9,   // E: Año
             6 => 12,  // F: Tipo
-            7 => 28,  // G: Categoría
-            8 => 20,  // H: Monto (COP)
-            9 => 24,  // I: Método de Pago
-            10 => 22, // J: Responsable
-            11 => 38, // K: Descripción / Concepto
-            12 => 18, // L: # Comprobante
-            13 => 12, // M: # Reserva
-            14 => 22, // N: Registrado Por
-            15 => 18  // O: Fecha Registro
+            7 => 15,  // G: Caja
+            8 => 28,  // H: Categoría
+            9 => 20,  // I: Monto (COP)
+            10 => 24, // J: Método de Pago
+            11 => 22, // K: Responsable
+            12 => 38, // L: Descripción / Concepto
+            13 => 18, // M: # Comprobante
+            14 => 12, // N: # Reserva
+            15 => 22, // O: Registrado Por
+            16 => 18  // P: Fecha Registro
         ];
         foreach ($colWidths as $col => $w) {
             $sheetXml .= "    <col min=\"{$col}\" max=\"{$col}\" width=\"{$w}\" customWidth=\"1\"/>\n";
@@ -85,31 +86,32 @@ class SimpleXlsxWriter {
         $rowIdx = 1;
         $merges = [];
 
-        // Fila 1: Título Principal (Centrado y combinado de A a O)
+        // Fila 1: Título Principal (Centrado y combinado de A a P)
         $sheetXml .= "    <row r=\"{$rowIdx}\" ht=\"32\" customHeight=\"1\">\n";
         $sheetXml .= "      <c r=\"A{$rowIdx}\" s=\"1\" t=\"inlineStr\"><is><t>" . self::xmlEscape("MY SUITE IN CARTAGENA - LIBRO DE CONTABILIDAD") . "</t></is></c>\n";
-        for ($c = 1; $c < 15; $c++) {
+        for ($c = 1; $c < 16; $c++) {
             $sheetXml .= "      <c r=\"" . self::getColLetter($c) . "{$rowIdx}\" s=\"1\"/>\n";
         }
         $sheetXml .= "    </row>\n";
-        $merges[] = "A{$rowIdx}:O{$rowIdx}";
+        $merges[] = "A{$rowIdx}:P{$rowIdx}";
         $rowIdx++;
 
-        // Fila 2: Subtítulo con filtros y fecha (Centrado y combinado de A a O)
+        // Fila 2: Subtítulo con filtros y fecha (Centrado y combinado de A a P)
         $sheetXml .= "    <row r=\"{$rowIdx}\" ht=\"20\" customHeight=\"1\">\n";
-        $subtitulo = "Período: {$periodo} | Tipo: {$tipoFiltro} | Generado el: " . date('Y-m-d H:i:s');
+        $cajaFiltroStr = !empty($filters['caja']) ? ' | Caja: ' . strtoupper($filters['caja']) : '';
+        $subtitulo = "Período: {$periodo} | Tipo: {$tipoFiltro}{$cajaFiltroStr} | Generado el: " . date('Y-m-d H:i:s');
         $sheetXml .= "      <c r=\"A{$rowIdx}\" s=\"2\" t=\"inlineStr\"><is><t>" . self::xmlEscape($subtitulo) . "</t></is></c>\n";
-        for ($c = 1; $c < 15; $c++) {
+        for ($c = 1; $c < 16; $c++) {
             $sheetXml .= "      <c r=\"" . self::getColLetter($c) . "{$rowIdx}\" s=\"2\"/>\n";
         }
         $sheetXml .= "    </row>\n";
-        $merges[] = "A{$rowIdx}:O{$rowIdx}";
+        $merges[] = "A{$rowIdx}:P{$rowIdx}";
         $rowIdx++;
 
         // Fila 3: Espacio
         $rowIdx++;
 
-        // Fila 4: Tarjetas de Resumen (Labels - Combinadas de 3 en 3 columnas)
+        // Fila 4: Tarjetas de Resumen (5 tarjetas de 3 columnas cada una, de B a P)
         $cardLabelRow = $rowIdx;
         $sheetXml .= "    <row r=\"{$cardLabelRow}\" ht=\"22\" customHeight=\"1\">\n";
         // B..D: TOTAL ENTRADAS
@@ -124,15 +126,20 @@ class SimpleXlsxWriter {
         $sheetXml .= "      <c r=\"H{$cardLabelRow}\" s=\"8\" t=\"inlineStr\"><is><t>BALANCE NETO</t></is></c>\n";
         $sheetXml .= "      <c r=\"I{$cardLabelRow}\" s=\"8\"/>\n";
         $sheetXml .= "      <c r=\"J{$cardLabelRow}\" s=\"8\"/>\n";
-        // K..M: TOTAL REGISTROS
-        $sheetXml .= "      <c r=\"K{$cardLabelRow}\" s=\"8\" t=\"inlineStr\"><is><t>TOTAL REGISTROS</t></is></c>\n";
+        // K..M: SALDO CAJA EVELYN
+        $sheetXml .= "      <c r=\"K{$cardLabelRow}\" s=\"8\" t=\"inlineStr\"><is><t>SALDO CAJA EVELYN</t></is></c>\n";
         $sheetXml .= "      <c r=\"L{$cardLabelRow}\" s=\"8\"/>\n";
         $sheetXml .= "      <c r=\"M{$cardLabelRow}\" s=\"8\"/>\n";
+        // N..P: SALDO CAJA CARLOS
+        $sheetXml .= "      <c r=\"N{$cardLabelRow}\" s=\"8\" t=\"inlineStr\"><is><t>SALDO CAJA CARLOS</t></is></c>\n";
+        $sheetXml .= "      <c r=\"O{$cardLabelRow}\" s=\"8\"/>\n";
+        $sheetXml .= "      <c r=\"P{$cardLabelRow}\" s=\"8\"/>\n";
         $sheetXml .= "    </row>\n";
         $merges[] = "B{$cardLabelRow}:D{$cardLabelRow}";
         $merges[] = "E{$cardLabelRow}:G{$cardLabelRow}";
         $merges[] = "H{$cardLabelRow}:J{$cardLabelRow}";
         $merges[] = "K{$cardLabelRow}:M{$cardLabelRow}";
+        $merges[] = "N{$cardLabelRow}:P{$cardLabelRow}";
         $rowIdx++;
 
         // Fila 5: Tarjetas de Resumen (Valores - Combinadas de 3 en 3 columnas)
@@ -150,15 +157,20 @@ class SimpleXlsxWriter {
         $sheetXml .= "      <c r=\"H{$cardValueRow}\" s=\"11\"><v>" . (float)$totales['balance_neto'] . "</v></c>\n";
         $sheetXml .= "      <c r=\"I{$cardValueRow}\" s=\"11\"/>\n";
         $sheetXml .= "      <c r=\"J{$cardValueRow}\" s=\"11\"/>\n";
-        // K..M: Valor Registros
-        $sheetXml .= "      <c r=\"K{$cardValueRow}\" s=\"12\"><v>" . (int)$totales['total_registros'] . "</v></c>\n";
-        $sheetXml .= "      <c r=\"L{$cardValueRow}\" s=\"12\"/>\n";
-        $sheetXml .= "      <c r=\"M{$cardValueRow}\" s=\"12\"/>\n";
+        // K..M: Valor Saldo Caja Evelyn
+        $sheetXml .= "      <c r=\"K{$cardValueRow}\" s=\"9\"><v>" . (float)($totales['saldo_caja_evelyn'] ?? 0) . "</v></c>\n";
+        $sheetXml .= "      <c r=\"L{$cardValueRow}\" s=\"9\"/>\n";
+        $sheetXml .= "      <c r=\"M{$cardValueRow}\" s=\"9\"/>\n";
+        // N..P: Valor Saldo Caja Carlos
+        $sheetXml .= "      <c r=\"N{$cardValueRow}\" s=\"11\"><v>" . (float)($totales['saldo_caja_carlos'] ?? 0) . "</v></c>\n";
+        $sheetXml .= "      <c r=\"O{$cardValueRow}\" s=\"11\"/>\n";
+        $sheetXml .= "      <c r=\"P{$cardValueRow}\" s=\"11\"/>\n";
         $sheetXml .= "    </row>\n";
         $merges[] = "B{$cardValueRow}:D{$cardValueRow}";
         $merges[] = "E{$cardValueRow}:G{$cardValueRow}";
         $merges[] = "H{$cardValueRow}:J{$cardValueRow}";
         $merges[] = "K{$cardValueRow}:M{$cardValueRow}";
+        $merges[] = "N{$cardValueRow}:P{$cardValueRow}";
         $rowIdx++;
 
         // Fila 6: Espacio
@@ -167,7 +179,7 @@ class SimpleXlsxWriter {
         // Fila 7: Encabezados de la Tabla
         $sheetXml .= "    <row r=\"{$rowIdx}\" ht=\"26\" customHeight=\"1\">\n";
         $headers = [
-            '# ID', 'Fecha', 'Día', 'Mes', 'Año', 'Tipo', 'Categoría / Concepto',
+            '# ID', 'Fecha', 'Día', 'Mes', 'Año', 'Tipo', 'Caja', 'Categoría / Concepto',
             'Monto (COP)', 'Método de Pago', 'Responsable', 'Descripción / Detalle',
             '# Comprobante', '# Reserva', 'Registrado Por', 'Fecha Registro'
         ];
@@ -182,11 +194,11 @@ class SimpleXlsxWriter {
         if (empty($movimientos)) {
             $sheetXml .= "    <row r=\"{$rowIdx}\" ht=\"24\" customHeight=\"1\">\n";
             $sheetXml .= "      <c r=\"A{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>No hay movimientos registrados para el período o filtros seleccionados.</t></is></c>\n";
-            for ($c = 1; $c < 15; $c++) {
+            for ($c = 1; $c < 16; $c++) {
                 $sheetXml .= "      <c r=\"" . self::getColLetter($c) . "{$rowIdx}\" s=\"4\"/>\n";
             }
             $sheetXml .= "    </row>\n";
-            $merges[] = "A{$rowIdx}:O{$rowIdx}";
+            $merges[] = "A{$rowIdx}:P{$rowIdx}";
             $rowIdx++;
         } else {
             foreach ($movimientos as $m) {
@@ -199,6 +211,7 @@ class SimpleXlsxWriter {
                 $nombreMes = $meses[$mesNum] ?? ($m['mes'] ?? date('F', $time));
                 $anio = $m['anio'] ?? (int)date('Y', $time);
                 $idMov = $m['id_movimiento'] ?? ($m['id'] ?? '-');
+                $caja = (string)($m['caja'] ?? 'Evelyn');
                 $categoria = (string)($m['categoria'] ?? '');
                 $monto = (float)($m['monto'] ?? 0);
                 $metodoPago = (string)($m['metodo_pago'] ?? 'EFECTIVO');
@@ -225,43 +238,45 @@ class SimpleXlsxWriter {
                 $sheetXml .= "      <c r=\"E{$rowIdx}\" s=\"5\"><v>{$anio}</v></c>\n";
                 // F: Tipo
                 $sheetXml .= "      <c r=\"F{$rowIdx}\" s=\"{$styleTipo}\" t=\"inlineStr\"><is><t>" . strtoupper($tipo) . "</t></is></c>\n";
-                // G: Categoría
-                $sheetXml .= "      <c r=\"G{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($categoria) . "</t></is></c>\n";
-                // H: Monto
-                $sheetXml .= "      <c r=\"H{$rowIdx}\" s=\"{$styleMonto}\"><v>{$monto}</v></c>\n";
-                // I: Método Pago
-                $sheetXml .= "      <c r=\"I{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($metodoPago) . "</t></is></c>\n";
-                // J: Responsable
-                $sheetXml .= "      <c r=\"J{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($responsable) . "</t></is></c>\n";
-                // K: Descripción
-                $sheetXml .= "      <c r=\"K{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($descripcion) . "</t></is></c>\n";
-                // L: Comprobante
-                $sheetXml .= "      <c r=\"L{$rowIdx}\" s=\"5\" t=\"inlineStr\"><is><t>" . self::xmlEscape($comprobante) . "</t></is></c>\n";
-                // M: Reserva
-                $sheetXml .= "      <c r=\"M{$rowIdx}\" s=\"5\" t=\"inlineStr\"><is><t>" . self::xmlEscape($idReserva) . "</t></is></c>\n";
-                // N: Creado Por
-                $sheetXml .= "      <c r=\"N{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($creadoPor) . "</t></is></c>\n";
-                // O: Fecha Registro
-                $sheetXml .= "      <c r=\"O{$rowIdx}\" s=\"5\" t=\"inlineStr\"><is><t>" . self::xmlEscape($creadoEn) . "</t></is></c>\n";
+                // G: Caja
+                $sheetXml .= "      <c r=\"G{$rowIdx}\" s=\"5\" t=\"inlineStr\"><is><t>" . self::xmlEscape($caja) . "</t></is></c>\n";
+                // H: Categoría
+                $sheetXml .= "      <c r=\"H{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($categoria) . "</t></is></c>\n";
+                // I: Monto
+                $sheetXml .= "      <c r=\"I{$rowIdx}\" s=\"{$styleMonto}\"><v>{$monto}</v></c>\n";
+                // J: Método Pago
+                $sheetXml .= "      <c r=\"J{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($metodoPago) . "</t></is></c>\n";
+                // K: Responsable
+                $sheetXml .= "      <c r=\"K{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($responsable) . "</t></is></c>\n";
+                // L: Descripción
+                $sheetXml .= "      <c r=\"L{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($descripcion) . "</t></is></c>\n";
+                // M: Comprobante
+                $sheetXml .= "      <c r=\"M{$rowIdx}\" s=\"5\" t=\"inlineStr\"><is><t>" . self::xmlEscape($comprobante) . "</t></is></c>\n";
+                // N: Reserva
+                $sheetXml .= "      <c r=\"N{$rowIdx}\" s=\"5\" t=\"inlineStr\"><is><t>" . self::xmlEscape($idReserva) . "</t></is></c>\n";
+                // O: Creado Por
+                $sheetXml .= "      <c r=\"O{$rowIdx}\" s=\"4\" t=\"inlineStr\"><is><t>" . self::xmlEscape($creadoPor) . "</t></is></c>\n";
+                // P: Fecha Registro
+                $sheetXml .= "      <c r=\"P{$rowIdx}\" s=\"5\" t=\"inlineStr\"><is><t>" . self::xmlEscape($creadoEn) . "</t></is></c>\n";
                 $sheetXml .= "    </row>\n";
                 $rowIdx++;
             }
 
-            // Fila de Totales final (Combinada A:G y I:O)
+            // Fila de Totales final (Combinada A:H e J:P)
             $totalesRow = $rowIdx;
             $sheetXml .= "    <row r=\"{$totalesRow}\" ht=\"24\" customHeight=\"1\">\n";
             $sheetXml .= "      <c r=\"A{$totalesRow}\" s=\"15\" t=\"inlineStr\"><is><t>TOTALES:</t></is></c>\n";
-            for ($c = 1; $c <= 6; $c++) { // B through G
+            for ($c = 1; $c <= 7; $c++) { // B through H
                 $sheetXml .= "      <c r=\"" . self::getColLetter($c) . "{$totalesRow}\" s=\"15\"/>\n";
             }
             $styleTotalesBalance = ($totales['balance_neto'] >= 0) ? 16 : 17;
-            $sheetXml .= "      <c r=\"H{$totalesRow}\" s=\"{$styleTotalesBalance}\"><v>" . (float)$totales['balance_neto'] . "</v></c>\n";
-            for ($c = 8; $c < 15; $c++) { // I through O
+            $sheetXml .= "      <c r=\"I{$totalesRow}\" s=\"{$styleTotalesBalance}\"><v>" . (float)$totales['balance_neto'] . "</v></c>\n";
+            for ($c = 9; $c < 16; $c++) { // J through P
                 $sheetXml .= "      <c r=\"" . self::getColLetter($c) . "{$totalesRow}\" s=\"18\"/>\n";
             }
             $sheetXml .= "    </row>\n";
-            $merges[] = "A{$totalesRow}:G{$totalesRow}";
-            $merges[] = "I{$totalesRow}:O{$totalesRow}";
+            $merges[] = "A{$totalesRow}:H{$totalesRow}";
+            $merges[] = "J{$totalesRow}:P{$totalesRow}";
             $rowIdx++;
         }
 
@@ -502,31 +517,34 @@ class SimpleXlsxWriter {
         <body>
             <table border="0">
                 <tr>
-                    <td colspan="15" class="header-title">MY SUITE IN CARTAGENA - LIBRO DE CONTABILIDAD</td>
+                    <td colspan="16" class="header-title">MY SUITE IN CARTAGENA - LIBRO DE CONTABILIDAD</td>
                 </tr>
                 <tr>
-                    <td colspan="15" class="header-subtitle">
+                    <td colspan="16" class="header-subtitle">
                         Período: <?= htmlspecialchars($periodo) ?>
                         | Tipo: <?= htmlspecialchars($tipoFiltro) ?>
+                        <?= !empty($filters['caja']) ? ' | Caja: ' . htmlspecialchars(strtoupper($filters['caja'])) : '' ?>
                         | Generado el: <?= date('Y-m-d H:i:s') ?>
                     </td>
                 </tr>
-                <tr><td colspan="15"></td></tr>
+                <tr><td colspan="16"></td></tr>
                 
-                <!-- Resumen de Totales -->
+                <!-- Resumen de Totales (5 Tarjetas) -->
                 <tr>
                     <td colspan="3" class="total-card text-center">TOTAL ENTRADAS</td>
                     <td colspan="3" class="total-card text-center">TOTAL SALIDAS</td>
                     <td colspan="3" class="total-card text-center">BALANCE NETO</td>
-                    <td colspan="3" class="total-card text-center">TOTAL REGISTROS</td>
+                    <td colspan="3" class="total-card text-center">SALDO CAJA EVELYN</td>
+                    <td colspan="4" class="total-card text-center">SALDO CAJA CARLOS</td>
                 </tr>
                 <tr>
                     <td colspan="3" class="total-card text-center total-entrada">$ <?= number_format($totales['total_entradas'], 2, ',', '.') ?></td>
                     <td colspan="3" class="total-card text-center total-salida">$ <?= number_format($totales['total_salidas'], 2, ',', '.') ?></td>
                     <td colspan="3" class="total-card text-center total-balance">$ <?= number_format($totales['balance_neto'], 2, ',', '.') ?></td>
-                    <td colspan="3" class="total-card text-center"><?= number_format($totales['total_registros'], 0, '', '.') ?></td>
+                    <td colspan="3" class="total-card text-center total-entrada">$ <?= number_format((float)($totales['saldo_caja_evelyn'] ?? 0), 2, ',', '.') ?></td>
+                    <td colspan="4" class="total-card text-center total-balance">$ <?= number_format((float)($totales['saldo_caja_carlos'] ?? 0), 2, ',', '.') ?></td>
                 </tr>
-                <tr><td colspan="15"></td></tr>
+                <tr><td colspan="16"></td></tr>
 
                 <!-- Encabezados de la Tabla -->
                 <tr>
@@ -536,6 +554,7 @@ class SimpleXlsxWriter {
                     <th style="width: 90px;">Mes</th>
                     <th style="width: 60px;">Año</th>
                     <th style="width: 90px;">Tipo</th>
+                    <th style="width: 110px;">Caja</th>
                     <th style="width: 220px;">Categoría / Concepto</th>
                     <th style="width: 140px;">Monto (COP)</th>
                     <th style="width: 160px;">Método de Pago</th>
@@ -550,7 +569,7 @@ class SimpleXlsxWriter {
                 <!-- Filas de Datos -->
                 <?php if (empty($movimientos)): ?>
                     <tr>
-                        <td colspan="15" class="text-center" style="padding: 20px; color: #64748b;">
+                        <td colspan="16" class="text-center" style="padding: 20px; color: #64748b;">
                             No hay movimientos registrados para el período o filtros seleccionados.
                         </td>
                     </tr>
@@ -566,6 +585,7 @@ class SimpleXlsxWriter {
                             $nombreMes = $meses[$mesNum] ?? ($m['mes'] ?? date('F', $time));
                             $anio = $m['anio'] ?? (int)date('Y', $time);
                             $idMov = $m['id_movimiento'] ?? ($m['id'] ?? '-');
+                            $caja = (string)($m['caja'] ?? 'Evelyn');
                         ?>
                         <tr>
                             <td class="text-center"><?= htmlspecialchars((string)$idMov) ?></td>
@@ -575,6 +595,9 @@ class SimpleXlsxWriter {
                             <td class="text-center"><?= htmlspecialchars((string)$anio) ?></td>
                             <td class="text-center <?= $isEntrada ? 'entrada' : 'salida' ?>">
                                 <?= strtoupper(htmlspecialchars((string)$tipo)) ?>
+                            </td>
+                            <td class="text-center">
+                                <strong><?= htmlspecialchars($caja) ?></strong>
                             </td>
                             <td><?= htmlspecialchars((string)($m['categoria'] ?? '')) ?></td>
                             <td class="text-right <?= $isEntrada ? 'entrada' : 'salida' ?>">
@@ -587,11 +610,12 @@ class SimpleXlsxWriter {
                             <td class="text-center"><?= htmlspecialchars((string)($m['id_reserva'] ?? '-')) ?></td>
                             <td><?= htmlspecialchars((string)($m['creado_por'] ?? 'Sistema')) ?></td>
                             <td class="text-center"><?= htmlspecialchars((string)($m['creado_en'] ?? '-')) ?></td>
+                        </tr>
                     <?php endforeach; ?>
 
                     <!-- Fila de Totales al final -->
                     <tr style="background-color: #f1f5f9; font-weight: bold;">
-                        <td colspan="7" class="text-right" style="padding: 10px;">TOTALES:</td>
+                        <td colspan="8" class="text-right" style="padding: 10px;">TOTALES:</td>
                         <td class="text-right <?= $totales['balance_neto'] >= 0 ? 'entrada' : 'salida' ?>">
                             $ <?= number_format($totales['balance_neto'], 2, ',', '.') ?>
                         </td>

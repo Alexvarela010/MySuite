@@ -10,6 +10,7 @@ AuthHelper::requireModule('contabilidad');
 require_once __DIR__ . '/../../../config/database.php';
 require_once __DIR__ . '/../../../includes/contabilidad_helper.php';
 
+$isAdmin = AuthHelper::isAdmin();
 $mesActual = (int)date('n');
 $anioActual = (int)date('Y');
 ?>
@@ -29,9 +30,16 @@ $anioActual = (int)date('Y');
         * {
             font-family: 'Oxygen', sans-serif;
         }
-        h1, h2, h3, h4, h5, h6 {
+        h1, h2 {
             font-family: 'Crimson Text', serif;
             color: #333;
+            line-height: 1.3;
+        }
+        h3, h4, h5, h6 {
+            font-family: 'Oxygen', sans-serif;
+            color: #1e293b;
+            font-weight: 700;
+            line-height: 1.4;
         }
         body {
             background-color: #f8fafc;
@@ -151,6 +159,26 @@ $anioActual = (int)date('Y');
         }
         .stat-card.stat-balance {
             border-left-color: #3b82f6;
+        }
+        .stat-card.stat-caja-evelyn {
+            border-left-color: #6366f1;
+        }
+        .stat-card.stat-caja-carlos {
+            border-left-color: #0d9488;
+        }
+        .badge-caja-evelyn {
+            background-color: #ede9fe;
+            color: #5b21b6;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .badge-caja-carlos {
+            background-color: #ccfbf1;
+            color: #0f766e;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
         }
         .stat-value {
             font-size: 1.75rem;
@@ -299,12 +327,14 @@ $anioActual = (int)date('Y');
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-3 mb-3 border-bottom">
                     <div>
                         <h1 class="h2 mb-1"><i class="fas fa-file-invoice-dollar text-primary me-2"></i> Módulo de Contabilidad</h1>
-                        <p class="text-muted mb-0">Gestión de flujo de caja: registro de entradas, salidas y exportación a Excel</p>
+                        <p class="text-muted mb-0">Gestión de flujo de caja: registro de entradas, salidas<?= $isAdmin ? ' y exportación a Excel' : '' ?></p>
                     </div>
                     <div class="d-flex gap-2">
+                        <?php if ($isAdmin): ?>
                         <button class="btn btn-outline-success" id="btnExportarExcel" title="Exportar movimientos a Excel con los filtros actuales">
                             <i class="fas fa-file-excel me-1 text-success"></i> Exportar a Excel
                         </button>
+                        <?php endif; ?>
                         <button class="btn btn-danger" onclick="abrirModalMovimiento('salida')">
                             <i class="fas fa-arrow-up me-1"></i> + Nueva Salida
                         </button>
@@ -314,10 +344,11 @@ $anioActual = (int)date('Y');
                     </div>
                 </div>
 
-                <!-- 3 Tarjetas de Resumen (Totales Dinámicos según Filtros) -->
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <div class="card stat-card stat-entrada p-3">
+                <?php if ($isAdmin): ?>
+                <!-- 5 Tarjetas de Resumen para Administrador -->
+                <div class="row g-3 mb-4">
+                    <div class="col-xl col-md-4 col-sm-6">
+                        <div class="card stat-card stat-entrada p-3 h-100">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="stat-label">Total Entradas</div>
@@ -329,8 +360,8 @@ $anioActual = (int)date('Y');
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card stat-card stat-salida p-3">
+                    <div class="col-xl col-md-4 col-sm-6">
+                        <div class="card stat-card stat-salida p-3 h-100">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="stat-label">Total Salidas</div>
@@ -342,15 +373,41 @@ $anioActual = (int)date('Y');
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card stat-card stat-balance p-3">
+                    <div class="col-xl col-md-4 col-sm-6">
+                        <div class="card stat-card stat-balance p-3 h-100">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <div class="stat-label">Balance Neto del Período</div>
+                                    <div class="stat-label">Balance Neto</div>
                                     <div class="stat-value" id="statBalance">$ 0</div>
                                 </div>
                                 <div class="rounded-circle bg-primary bg-opacity-10 p-3 text-primary">
                                     <i class="fas fa-scale-balanced fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl col-md-6 col-sm-6">
+                        <div class="card stat-card stat-caja-evelyn p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">Saldo Caja Evelyn</div>
+                                    <div class="stat-value" id="statSaldoEvelyn" style="color: #6366f1;">$ 0</div>
+                                </div>
+                                <div class="rounded-circle p-3 text-white" style="background-color: #6366f1;">
+                                    <i class="fas fa-cash-register fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl col-md-6 col-sm-6">
+                        <div class="card stat-card stat-caja-carlos p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">Saldo Caja Carlos</div>
+                                    <div class="stat-value" id="statSaldoCarlos" style="color: #0d9488;">$ 0</div>
+                                </div>
+                                <div class="rounded-circle p-3 text-white" style="background-color: #0d9488;">
+                                    <i class="fas fa-vault fa-2x"></i>
                                 </div>
                             </div>
                         </div>
@@ -396,15 +453,17 @@ $anioActual = (int)date('Y');
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small text-muted mb-1 fw-bold">Categoría</label>
-                            <select class="form-select form-select-sm" id="filtroCategoria">
-                                <option value="">Todas las categorías</option>
+                            <label class="form-label small text-muted mb-1 fw-bold">Caja</label>
+                            <select class="form-select form-select-sm" id="filtroCaja">
+                                <option value="">Todas las cajas</option>
+                                <option value="Evelyn">Caja Evelyn</option>
+                                <option value="Carlos">Caja Carlos</option>
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small text-muted mb-1 fw-bold">Medio de Pago</label>
-                            <select class="form-select form-select-sm" id="filtroMetodoPago">
-                                <option value="">Todos los medios</option>
+                            <label class="form-label small text-muted mb-1 fw-bold">Categoría</label>
+                            <select class="form-select form-select-sm" id="filtroCategoria">
+                                <option value="">Todas las categorías</option>
                             </select>
                         </div>
                         <div class="col-md-2">
@@ -419,7 +478,7 @@ $anioActual = (int)date('Y');
                     </div>
                 </div>
 
-                <!-- Tabla Principal de Movimientos -->
+                <!-- Tabla Principal de Movimientos (Solo Admin) -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
@@ -436,19 +495,20 @@ $anioActual = (int)date('Y');
                             <thead>
                                 <tr>
                                     <th style="width: 70px;">ID</th>
-                                    <th style="width: 110px;">Fecha</th>
-                                    <th style="width: 100px;">Tipo</th>
-                                    <th style="width: 220px;">Categoría</th>
+                                    <th style="width: 105px;">Fecha</th>
+                                    <th style="width: 95px;">Tipo</th>
+                                    <th style="width: 115px;">Caja</th>
+                                    <th style="width: 200px;">Categoría</th>
                                     <th>Descripción / Concepto</th>
-                                    <th style="width: 150px;">Medio de Pago</th>
-                                    <th style="width: 140px;">Responsable</th>
-                                    <th style="width: 150px;" class="text-end">Monto</th>
+                                    <th style="width: 140px;">Medio de Pago</th>
+                                    <th style="width: 130px;">Responsable</th>
+                                    <th style="width: 140px;" class="text-end">Monto</th>
                                     <th style="width: 90px;" class="text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tbodyMovimientos">
                                 <tr>
-                                    <td colspan="9" class="text-center py-5 text-muted">
+                                    <td colspan="10" class="text-center py-5 text-muted">
                                         <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
                                         Cargando movimientos contables...
                                     </td>
@@ -469,6 +529,39 @@ $anioActual = (int)date('Y');
                         </nav>
                     </div>
                 </div>
+                <?php else: ?>
+                <!-- Vista para Operador: Únicamente Tarjeta de Saldo Caja Evelyn -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-5 col-xl-4">
+                        <div class="card stat-card stat-caja-evelyn p-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label text-uppercase fw-bold text-muted mb-1" style="letter-spacing: 0.5px;">Saldo Caja Evelyn</div>
+                                    <div class="stat-value" id="statSaldoEvelyn" style="color: #6366f1; font-size: 2.2rem; font-weight: 800;">$ 0</div>
+                                    <div class="small text-muted mt-2">
+                                        <i class="fas fa-wallet me-1 text-primary"></i> Efectivo disponible en tu caja
+                                    </div>
+                                </div>
+                                <div class="rounded-circle p-3 text-white shadow-sm" style="background-color: #6366f1;">
+                                    <i class="fas fa-cash-register fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 bg-white p-4 shadow-sm">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-light p-3 me-3 text-primary flex-shrink-0" style="width: 54px; height: 54px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1 fw-bold text-dark" style="font-family: 'Oxygen', sans-serif !important; line-height: 1.4 !important; font-size: 1.15rem;">Registro de Operaciones de Caja</h5>
+                            <p class="text-muted mb-0" style="line-height: 1.5;">Para registrar un ingreso o salida de dinero utiliza los botones <strong>+ Nueva Entrada</strong> o <strong>+ Nueva Salida</strong> ubicados en la parte superior derecha.</p>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
 
             </main>
         </div>
@@ -506,6 +599,18 @@ $anioActual = (int)date('Y');
                         </div>
 
                         <div class="row g-3">
+                            <!-- Caja: Evelyn o Carlos -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small" id="lblMovCaja">
+                                    <i class="fas fa-cash-register me-1 text-success"></i> ¿A qué caja entra el dinero? <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select fw-bold" id="movCaja" name="caja" required>
+                                    <option value="Evelyn" selected>Caja Evelyn</option>
+                                    <option value="Carlos">Caja Carlos</option>
+                                </select>
+                                <div class="form-text small" id="helpMovCaja">El dinero sumará al saldo de la caja seleccionada.</div>
+                            </div>
+
                             <!-- Fecha -->
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small">Fecha <span class="text-danger">*</span></label>
@@ -582,11 +687,14 @@ $anioActual = (int)date('Y');
 
     <!-- Script de Gestión Contable -->
     <script>
+        const isAdmin = <?= $isAdmin ? 'true' : 'false' ?>;
+
         // Catálogo en memoria
         let catalogo = {
             categorias: { entradas: [], salidas: [] },
             metodos_pago: [],
-            responsables: []
+            responsables: [],
+            cajas: ['Evelyn', 'Carlos']
         };
 
         let currentPage = 1;
@@ -599,42 +707,52 @@ $anioActual = (int)date('Y');
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar carga de movimientos
+            // Inicializar carga de movimientos y totales
             cargarMovimientos(1);
 
-            // Listeners de filtros
-            $('#filtroMes, #filtroAnio, #filtroTipo, #filtroCategoria, #filtroMetodoPago').on('change', function() {
-                cargarMovimientos(1);
-            });
-
-            // Buscador con debounce
-            let searchTimeout = null;
-            $('#filtroSearch').on('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
+            if (isAdmin) {
+                // Listeners de filtros exclusivos de Admin
+                $('#filtroMes, #filtroAnio, #filtroTipo, #filtroCaja, #filtroCategoria, #filtroMetodoPago').on('change', function() {
                     cargarMovimientos(1);
-                }, 300);
-            });
+                });
 
-            // Limpiar filtros
-            $('#btnLimpiarFiltros').on('click', function() {
-                $('#filtroMes').val('');
-                $('#filtroAnio').val('<?= $anioActual ?>');
-                $('#filtroTipo').val('');
-                $('#filtroCategoria').val('');
-                $('#filtroMetodoPago').val('');
-                $('#filtroSearch').val('');
-                actualizarSelectCategoriasFiltro();
-                cargarMovimientos(1);
-            });
+                // Buscador con debounce
+                let searchTimeout = null;
+                $('#filtroSearch').on('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        cargarMovimientos(1);
+                    }, 300);
+                });
 
-            // Cuando cambia el filtro de Tipo, actualizar las opciones de Categoría en el filtro
-            $('#filtroTipo').on('change', function() {
-                actualizarSelectCategoriasFiltro();
-            });
+                // Limpiar filtros
+                $('#btnLimpiarFiltros').on('click', function() {
+                    $('#filtroMes').val('');
+                    $('#filtroAnio').val('<?= $anioActual ?>');
+                    $('#filtroTipo').val('');
+                    $('#filtroCaja').val('');
+                    $('#filtroCategoria').val('');
+                    $('#filtroMetodoPago').val('');
+                    $('#filtroSearch').val('');
+                    actualizarSelectCategoriasFiltro();
+                    cargarMovimientos(1);
+                });
+
+                // Cuando cambia el filtro de Tipo, actualizar las opciones de Categoría en el filtro
+                $('#filtroTipo').on('change', function() {
+                    actualizarSelectCategoriasFiltro();
+                });
+
+                // Botón exportar Excel
+                $('#btnExportarExcel').on('click', function() {
+                    exportarExcel();
+                });
+            }
 
             // Cambio de Tipo en el modal (Entrada vs Salida)
             $('input[name="tipo"]').on('change', function() {
+                const tipoSel = $(this).val();
+                actualizarLabelsCajaModal(tipoSel);
                 actualizarCategoriasModal();
             });
 
@@ -653,42 +771,43 @@ $anioActual = (int)date('Y');
                 e.preventDefault();
                 guardarMovimiento();
             });
-
-            // Botón exportar Excel
-            $('#btnExportarExcel').on('click', function() {
-                exportarExcel();
-            });
         });
 
         // Cargar movimientos con la API
         function cargarMovimientos(page = 1) {
             currentPage = page;
-            const mes = $('#filtroMes').val();
-            const anio = $('#filtroAnio').val();
-            const tipo = $('#filtroTipo').val();
-            const categoria = $('#filtroCategoria').val();
-            const metodo_pago = $('#filtroMetodoPago').val();
-            const search = $('#filtroSearch').val();
-
-            $('#tbodyMovimientos').html(`
-                <tr>
-                    <td colspan="9" class="text-center py-5 text-muted">
-                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-                        Cargando movimientos...
-                    </td>
-                </tr>
-            `);
 
             const params = new URLSearchParams({
                 page: page,
                 limit: 20
             });
-            if (mes) params.append('mes', mes);
-            if (anio) params.append('anio', anio);
-            if (tipo) params.append('tipo', tipo);
-            if (categoria) params.append('categoria', categoria);
-            if (metodo_pago) params.append('metodo_pago', metodo_pago);
-            if (search) params.append('search', search);
+
+            if (isAdmin) {
+                const mes = $('#filtroMes').val();
+                const anio = $('#filtroAnio').val();
+                const tipo = $('#filtroTipo').val();
+                const caja = $('#filtroCaja').val();
+                const categoria = $('#filtroCategoria').val();
+                const metodo_pago = $('#filtroMetodoPago').val();
+                const search = $('#filtroSearch').val();
+
+                if (mes) params.append('mes', mes);
+                if (anio) params.append('anio', anio);
+                if (tipo) params.append('tipo', tipo);
+                if (caja) params.append('caja', caja);
+                if (categoria) params.append('categoria', categoria);
+                if (metodo_pago) params.append('metodo_pago', metodo_pago);
+                if (search) params.append('search', search);
+
+                $('#tbodyMovimientos').html(`
+                    <tr>
+                        <td colspan="10" class="text-center py-5 text-muted">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                            Cargando movimientos...
+                        </td>
+                    </tr>
+                `);
+            }
 
             fetch(`/app/api/admin/contabilidad_get_movimientos.php?${params.toString()}`, {
                 headers: {
@@ -699,69 +818,87 @@ $anioActual = (int)date('Y');
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    // Actualizar catálogo si es primera vez
+                    // Actualizar catálogo
                     if (data.catalogo) {
                         catalogo = data.catalogo;
                         actualizarCatalogosEnUI();
                     }
 
-                    // Renderizar totales
+                    // Renderizar tarjetas de totales
                     renderTotales(data.totales);
 
-                    // Renderizar tabla
-                    renderTabla(data.movimientos);
-
-                    // Renderizar paginación
-                    renderPaginacion(data.pagination);
+                    // Renderizar tabla y paginación solo si es admin
+                    if (isAdmin) {
+                        renderTabla(data.movimientos);
+                        renderPaginacion(data.pagination);
+                    }
                 } else {
-                    $('#tbodyMovimientos').html(`
-                        <tr>
-                            <td colspan="9" class="text-center py-4 text-danger">
-                                <i class="fas fa-exclamation-triangle me-1"></i> Error: ${data.message || 'No se pudieron cargar los movimientos'}
-                            </td>
-                        </tr>
-                    `);
+                    if (isAdmin) {
+                        $('#tbodyMovimientos').html(`
+                            <tr>
+                                <td colspan="10" class="text-center py-4 text-danger">
+                                    <i class="fas fa-exclamation-triangle me-1"></i> Error: ${data.message || 'No se pudieron cargar los movimientos'}
+                                </td>
+                            </tr>
+                        `);
+                    }
                 }
             })
             .catch(err => {
                 console.error('Error al cargar movimientos:', err);
-                $('#tbodyMovimientos').html(`
-                    <tr>
-                        <td colspan="9" class="text-center py-4 text-danger">
-                            <i class="fas fa-exclamation-circle me-1"></i> Error de conexión con el servidor.
-                        </td>
-                    </tr>
-                `);
+                if (isAdmin) {
+                    $('#tbodyMovimientos').html(`
+                        <tr>
+                            <td colspan="10" class="text-center py-4 text-danger">
+                                <i class="fas fa-exclamation-circle me-1"></i> Error de conexión con el servidor.
+                            </td>
+                        </tr>
+                    `);
+                }
             });
         }
 
-        // Renderizar totales en las 3 tarjetas
+        // Renderizar totales en las tarjetas según rol
         function renderTotales(totales) {
             if (!totales) return;
-            $('#statEntradas').text(formatoMoneda.format(totales.total_entradas || 0));
-            $('#statSalidas').text(formatoMoneda.format(totales.salidas || totales.total_salidas || 0));
 
-            const balance = totales.balance_neto || 0;
-            const elBalance = $('#statBalance');
-            elBalance.text((balance >= 0 ? '+ ' : '') + formatoMoneda.format(balance));
-            if (balance >= 0) {
-                elBalance.removeClass('text-danger').addClass('text-primary');
-            } else {
-                elBalance.removeClass('text-primary').addClass('text-danger');
+            // Saldo Caja Evelyn (visible tanto para admin como para operador)
+            if ($('#statSaldoEvelyn').length) {
+                $('#statSaldoEvelyn').text(formatoMoneda.format(totales.saldo_caja_evelyn || 0));
             }
 
-            $('#badgeTotalRegistros').text(`${totales.total_registros || 0} movimientos`);
+            // Métricas exclusivas para Admin
+            if (isAdmin) {
+                if ($('#statSaldoCarlos').length) {
+                    $('#statSaldoCarlos').text(formatoMoneda.format(totales.saldo_caja_carlos || 0));
+                }
+
+                $('#statEntradas').text(formatoMoneda.format(totales.total_entradas || 0));
+                $('#statSalidas').text(formatoMoneda.format(totales.total_salidas || 0));
+
+                const balance = totales.balance_neto || 0;
+                const elBalance = $('#statBalance');
+                elBalance.text((balance >= 0 ? '+ ' : '') + formatoMoneda.format(balance));
+                if (balance >= 0) {
+                    elBalance.removeClass('text-danger').addClass('text-primary');
+                } else {
+                    elBalance.removeClass('text-primary').addClass('text-danger');
+                }
+
+                $('#badgeTotalRegistros').text(`${totales.total_registros || 0} movimientos`);
+            }
         }
 
-        // Renderizar tabla de movimientos
+        // Renderizar tabla de movimientos (Solo vista Admin)
         function renderTabla(movimientos) {
             const tbody = $('#tbodyMovimientos');
+            if (!tbody.length) return;
             tbody.empty();
 
             if (!movimientos || movimientos.length === 0) {
                 tbody.html(`
                     <tr>
-                        <td colspan="9" class="text-center py-5 text-muted">
+                        <td colspan="10" class="text-center py-5 text-muted">
                             <i class="fas fa-folder-open fa-3x mb-3 text-secondary opacity-50 d-block"></i>
                             <strong>No hay movimientos registrados</strong>
                             <p class="small mb-0">No se encontraron registros para los filtros seleccionados.</p>
@@ -777,6 +914,11 @@ $anioActual = (int)date('Y');
                     ? `<span class="badge badge-entrada"><i class="fas fa-arrow-down me-1"></i>Entrada</span>` 
                     : `<span class="badge badge-salida"><i class="fas fa-arrow-up me-1"></i>Salida</span>`;
                 
+                const cajaNombre = m.caja || 'Evelyn';
+                const badgeCaja = (cajaNombre === 'Carlos')
+                    ? `<span class="badge badge-caja-carlos"><i class="fas fa-vault me-1"></i>Caja Carlos</span>`
+                    : `<span class="badge badge-caja-evelyn"><i class="fas fa-cash-register me-1"></i>Caja Evelyn</span>`;
+
                 const signo = isEntrada ? '+ ' : '- ';
                 const claseMonto = isEntrada ? 'monto-entrada' : 'monto-salida';
 
@@ -787,12 +929,13 @@ $anioActual = (int)date('Y');
                             <div class="fw-bold">${m.fecha}</div>
                         </td>
                         <td>${badgeTipo}</td>
+                        <td>${badgeCaja}</td>
                         <td>
-                            <strong class="text-dark">${m.categoria}</strong>
+                            <strong class="text-dark">${escapeHtml(m.categoria)}</strong>
                             ${m.id_reserva ? `<br><small class="text-muted"><i class="fas fa-calendar-check me-1 text-primary"></i>Reserva #${m.id_reserva}</small>` : ''}
                         </td>
                         <td>
-                            <div class="text-wrap" style="max-width: 320px;">
+                            <div class="text-wrap" style="max-width: 300px;">
                                 ${m.descripcion ? escapeHtml(m.descripcion) : '<span class="text-muted fst-italic">Sin descripción</span>'}
                                 ${m.comprobante_numero ? `<div class="small text-muted"><i class="fas fa-receipt me-1"></i>Comp: <strong>${escapeHtml(m.comprobante_numero)}</strong></div>` : ''}
                             </div>
@@ -824,7 +967,7 @@ $anioActual = (int)date('Y');
 
         // Renderizar paginación
         function renderPaginacion(pag) {
-            if (!pag) return;
+            if (!pag || !$('#paginationControls').length) return;
             $('#spanPaginaActual').text(pag.current_page);
             $('#spanTotalPaginas').text(pag.total_pages);
             
@@ -867,27 +1010,32 @@ $anioActual = (int)date('Y');
 
         // Actualizar catálogos en los selects
         function actualizarCatalogosEnUI() {
-            // Métodos de pago en filtro y modal
-            const selectMetodoFiltro = $('#filtroMetodoPago');
-            const selectMetodoModal = $('#movMetodoPago');
-            
-            const selFiltroVal = selectMetodoFiltro.val();
-            selectMetodoFiltro.find('option:not(:first)').remove();
-            selectMetodoModal.empty();
+            if (isAdmin) {
+                // Métodos de pago en filtro
+                const selectMetodoFiltro = $('#filtroMetodoPago');
+                const selFiltroVal = selectMetodoFiltro.val();
+                selectMetodoFiltro.find('option:not(:first)').remove();
+                catalogo.metodos_pago.forEach(m => {
+                    selectMetodoFiltro.append(`<option value="${m}">${m}</option>`);
+                });
+                if (selFiltroVal) selectMetodoFiltro.val(selFiltroVal);
 
+                // Categorías en filtro
+                actualizarSelectCategoriasFiltro();
+            }
+
+            // Métodos de pago en modal
+            const selectMetodoModal = $('#movMetodoPago');
+            selectMetodoModal.empty();
             catalogo.metodos_pago.forEach(m => {
-                selectMetodoFiltro.append(`<option value="${m}">${m}</option>`);
                 selectMetodoModal.append(`<option value="${m}">${m}</option>`);
             });
-            if (selFiltroVal) selectMetodoFiltro.val(selFiltroVal);
-
-            // Categorías en filtro
-            actualizarSelectCategoriasFiltro();
         }
 
-        // Actualizar opciones de categoría en la barra de filtro
+        // Actualizar opciones de categoría en la barra de filtro (Admin)
         function actualizarSelectCategoriasFiltro() {
             const select = $('#filtroCategoria');
+            if (!select.length) return;
             const currentVal = select.val();
             const tipo = $('#filtroTipo').val();
 
@@ -911,6 +1059,17 @@ $anioActual = (int)date('Y');
             }
         }
 
+        // Actualizar etiquetas dinámicas del selector de caja en modal
+        function actualizarLabelsCajaModal(tipo) {
+            if (tipo === 'salida') {
+                $('#lblMovCaja').html('<i class="fas fa-cash-register me-1 text-danger"></i> ¿De qué caja sale el dinero? <span class="text-danger">*</span>');
+                $('#helpMovCaja').text('El monto se descontará del saldo de la caja seleccionada.');
+            } else {
+                $('#lblMovCaja').html('<i class="fas fa-cash-register me-1 text-success"></i> ¿A qué caja entra el dinero? <span class="text-danger">*</span>');
+                $('#helpMovCaja').text('El monto se sumará al saldo de la caja seleccionada.');
+            }
+        }
+
         // Actualizar opciones de categoría en el Modal según el Tipo seleccionado
         function actualizarCategoriasModal(selectedCategory = null) {
             const tipo = $('input[name="tipo"]:checked').val();
@@ -924,7 +1083,6 @@ $anioActual = (int)date('Y');
             });
 
             if (selectedCategory) {
-                // Si es una categoría personalizada que no está en la lista, agregarla
                 if (!lista.includes(selectedCategory)) {
                     select.append(`<option value="${selectedCategory}">${selectedCategory}</option>`);
                 }
@@ -937,6 +1095,7 @@ $anioActual = (int)date('Y');
             $('#formMovimiento')[0].reset();
             $('#movId').val('');
             $('#movFecha').val(new Date().toISOString().split('T')[0]);
+            $('#movCaja').val('Evelyn');
 
             if (tipo === 'salida') {
                 $('#tipoSalida').prop('checked', true);
@@ -944,6 +1103,7 @@ $anioActual = (int)date('Y');
                 $('#tipoEntrada').prop('checked', true);
             }
 
+            actualizarLabelsCajaModal(tipo);
             actualizarCategoriasModal();
             $('#modalMovimientoTitulo').html('<i class="fas fa-plus-circle me-1 text-primary"></i> Registrar ' + (tipo === 'salida' ? 'Salida / Gasto' : 'Entrada de Dinero'));
             $('#modalMovimiento').modal('show');
@@ -954,6 +1114,7 @@ $anioActual = (int)date('Y');
             $('#movId').val(m.id_movimiento);
             $('#movFecha').val(m.fecha);
             $('#movMonto').val(new Intl.NumberFormat('es-CO').format(parseInt(m.monto, 10)));
+            $('#movCaja').val(m.caja || 'Evelyn');
             $('#movMetodoPago').val(m.metodo_pago || 'EFECTIVO');
             $('#movResponsable').val(m.responsable || '');
             $('#movComprobante').val(m.comprobante_numero || '');
@@ -966,6 +1127,7 @@ $anioActual = (int)date('Y');
                 $('#tipoEntrada').prop('checked', true);
             }
 
+            actualizarLabelsCajaModal(m.tipo);
             actualizarCategoriasModal(m.categoria);
             $('#modalMovimientoTitulo').html(`<i class="fas fa-edit me-1 text-primary"></i> Editar Movimiento #${m.id_movimiento}`);
             $('#modalMovimiento').modal('show');
@@ -980,6 +1142,7 @@ $anioActual = (int)date('Y');
             const formData = {
                 id_movimiento: $('#movId').val(),
                 tipo: $('input[name="tipo"]:checked').val(),
+                caja: $('#movCaja').val(),
                 fecha: $('#movFecha').val(),
                 monto: $('#movMonto').val(),
                 categoria: $('#movCategoria').val(),
@@ -1082,6 +1245,7 @@ $anioActual = (int)date('Y');
             const mes = $('#filtroMes').val();
             const anio = $('#filtroAnio').val();
             const tipo = $('#filtroTipo').val();
+            const caja = $('#filtroCaja').val();
             const categoria = $('#filtroCategoria').val();
             const metodo_pago = $('#filtroMetodoPago').val();
             const search = $('#filtroSearch').val();
@@ -1090,6 +1254,7 @@ $anioActual = (int)date('Y');
             if (mes) params.append('mes', mes);
             if (anio) params.append('anio', anio);
             if (tipo) params.append('tipo', tipo);
+            if (caja) params.append('caja', caja);
             if (categoria) params.append('categoria', categoria);
             if (metodo_pago) params.append('metodo_pago', metodo_pago);
             if (search) params.append('search', search);

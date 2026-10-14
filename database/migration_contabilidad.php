@@ -39,6 +39,7 @@ try {
             fecha DATE NOT NULL,
             categoria VARCHAR(100) NOT NULL,
             monto DECIMAL(12,2) NOT NULL,
+            caja VARCHAR(50) NOT NULL DEFAULT 'Evelyn',
             metodo_pago VARCHAR(50) NOT NULL DEFAULT 'EFECTIVO',
             responsable VARCHAR(100) NULL,
             descripcion TEXT NULL,
@@ -51,10 +52,22 @@ try {
             INDEX idx_fecha (fecha),
             INDEX idx_tipo (tipo),
             INDEX idx_categoria (categoria),
+            INDEX idx_caja (caja),
             INDEX idx_activo (activo),
             INDEX idx_reserva (id_reserva)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
+
+    // Verificar si la columna 'caja' ya existe por si la tabla fue creada anteriormente
+    try {
+        $chkCol = $db->query("SHOW COLUMNS FROM contabilidad_movimientos LIKE 'caja'")->fetch();
+        if (!$chkCol) {
+            $db->exec("ALTER TABLE contabilidad_movimientos ADD COLUMN caja VARCHAR(50) NOT NULL DEFAULT 'Evelyn' AFTER monto, ADD INDEX idx_caja (caja)");
+            echo "✓ Columna 'caja' añadida a contabilidad_movimientos.\n";
+        }
+    } catch (\Throwable $eCol) {
+        // Ignorar
+    }
     echo "✓ Tabla contabilidad_movimientos lista.\n";
 
     echo "3. Insertando categorías iniciales desde Excel...\n";
