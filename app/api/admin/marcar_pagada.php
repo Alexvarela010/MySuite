@@ -277,10 +277,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->rowCount() > 0) {
             // Determinar el mensaje según el cambio realizado
             if ($estado_actual === 'aprobada' && $estado_pago_actual === 'pendiente') {
-                // Se cambió de aprobada a abonada - NO ENVIAR CORREO DE SALDO AQUÍ
+                // Aprobada → Abonada
+                $etapa_contabilidad = 'abonada';
+                $was_abonada = false;
                 $mensaje_respuesta = 'Reserva marcada como ABONADA exitosamente.';
                 error_log("Reserva $reserva_id cambiada de aprobada a abonada");
             } elseif ($estado_actual === 'abonada') {
+                $etapa_contabilidad = 'pagada';
+                $was_abonada = true;
                 // Se cambió de abonada a pagada - enviar correo
                 // Obtener datos de la reserva para enviar el correo
                 $query_reserva = "SELECT r.*, 
@@ -332,12 +336,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mensaje_respuesta = 'Reserva marcada como PAGADA exitosamente (correo no disponible)';
                 }
             } else {
+                $etapa_contabilidad = 'pagada';
+                $was_abonada = false;
                 $mensaje_respuesta = 'Reserva actualizada exitosamente';
             }
             
             echo json_encode([
                 'success' => true, 
-                'message' => $mensaje_respuesta
+                'message' => $mensaje_respuesta,
+                'id_reserva' => (int)$reserva_id,
+                'etapa_contabilidad' => $etapa_contabilidad,
+                'was_abonada' => $was_abonada
             ]);
         } else {
             echo json_encode([

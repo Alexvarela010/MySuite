@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/../../../includes/auth_helper.php';
 AuthHelper::requireModule('permisos');
+require_once __DIR__ . '/../../../includes/proximas_reservas_helper.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -14,6 +15,8 @@ try {
     if (!$db) {
         throw new Exception("Error al conectar a la base de datos.");
     }
+
+    ProximasReservasHelper::ensureTablesExist($db);
 
     // 1. Obtener Roles
     $stmtRoles = $db->query("SELECT * FROM roles ORDER BY id_rol ASC");

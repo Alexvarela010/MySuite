@@ -413,6 +413,27 @@ $anioActual = (int)date('Y');
                         </div>
                     </div>
                 </div>
+                <?php else: ?>
+                <!-- Vista para Operador: Únicamente Tarjeta de Saldo Caja Evelyn -->
+                <div class="row mb-4">
+                    <div class="col-md-6 col-lg-5 col-xl-4">
+                        <div class="card stat-card stat-caja-evelyn p-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label text-uppercase fw-bold text-muted mb-1" style="letter-spacing: 0.5px;">Saldo Caja Evelyn</div>
+                                    <div class="stat-value" id="statSaldoEvelyn" style="color: #6366f1; font-size: 2.2rem; font-weight: 800;">$ 0</div>
+                                    <div class="small text-muted mt-2">
+                                        <i class="fas fa-wallet me-1 text-primary"></i> Efectivo disponible en tu caja
+                                    </div>
+                                </div>
+                                <div class="rounded-circle p-3 text-white shadow-sm" style="background-color: #6366f1;">
+                                    <i class="fas fa-cash-register fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <!-- Barra de Filtros (Card) -->
                 <div class="card p-3 mb-4">
@@ -478,7 +499,7 @@ $anioActual = (int)date('Y');
                     </div>
                 </div>
 
-                <!-- Tabla Principal de Movimientos (Solo Admin) -->
+                <!-- Tabla Principal de Movimientos -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
@@ -529,39 +550,6 @@ $anioActual = (int)date('Y');
                         </nav>
                     </div>
                 </div>
-                <?php else: ?>
-                <!-- Vista para Operador: Únicamente Tarjeta de Saldo Caja Evelyn -->
-                <div class="row mb-4">
-                    <div class="col-md-6 col-lg-5 col-xl-4">
-                        <div class="card stat-card stat-caja-evelyn p-4 shadow-sm">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-label text-uppercase fw-bold text-muted mb-1" style="letter-spacing: 0.5px;">Saldo Caja Evelyn</div>
-                                    <div class="stat-value" id="statSaldoEvelyn" style="color: #6366f1; font-size: 2.2rem; font-weight: 800;">$ 0</div>
-                                    <div class="small text-muted mt-2">
-                                        <i class="fas fa-wallet me-1 text-primary"></i> Efectivo disponible en tu caja
-                                    </div>
-                                </div>
-                                <div class="rounded-circle p-3 text-white shadow-sm" style="background-color: #6366f1;">
-                                    <i class="fas fa-cash-register fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card border-0 bg-white p-4 shadow-sm">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-light p-3 me-3 text-primary flex-shrink-0" style="width: 54px; height: 54px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-info-circle fa-2x"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-1 fw-bold text-dark" style="font-family: 'Oxygen', sans-serif !important; line-height: 1.4 !important; font-size: 1.15rem;">Registro de Operaciones de Caja</h5>
-                            <p class="text-muted mb-0" style="line-height: 1.5;">Para registrar un ingreso o salida de dinero utiliza los botones <strong>+ Nueva Entrada</strong> o <strong>+ Nueva Salida</strong> ubicados en la parte superior derecha.</p>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
 
             </main>
         </div>
@@ -660,10 +648,21 @@ $anioActual = (int)date('Y');
                             </div>
 
                             <!-- Reserva Relacionada -->
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold small"># ID de Reserva Vinculada (Opcional)</label>
                                 <input type="number" class="form-control" id="movReserva" name="id_reserva" placeholder="Ej: 104">
-                                <div class="form-text small">Si este movimiento corresponde al 20%, 80% o gasto de una reserva del sistema, indica su ID.</div>
+                            </div>
+
+                            <!-- Número de Noches -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Número de Noches (Opcional)</label>
+                                <input type="number" min="0" class="form-control" id="movNoches" name="numero_noches" placeholder="Ej: 3">
+                            </div>
+
+                            <!-- Cantidad de Personas -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Cantidad de Personas (Opcional)</label>
+                                <input type="number" min="0" class="form-control" id="movPersonas" name="cantidad_personas" placeholder="Ej: 6">
                             </div>
 
                             <!-- Descripción / Observaciones -->
@@ -710,40 +709,40 @@ $anioActual = (int)date('Y');
             // Inicializar carga de movimientos y totales
             cargarMovimientos(1);
 
+            // Listeners de filtros
+            $('#filtroMes, #filtroAnio, #filtroTipo, #filtroCaja, #filtroCategoria, #filtroMetodoPago').on('change', function() {
+                cargarMovimientos(1);
+            });
+
+            // Buscador con debounce
+            let searchTimeout = null;
+            $('#filtroSearch').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    cargarMovimientos(1);
+                }, 300);
+            });
+
+            // Limpiar filtros
+            $('#btnLimpiarFiltros').on('click', function() {
+                $('#filtroMes').val('');
+                $('#filtroAnio').val('<?= $anioActual ?>');
+                $('#filtroTipo').val('');
+                $('#filtroCaja').val('');
+                $('#filtroCategoria').val('');
+                $('#filtroMetodoPago').val('');
+                $('#filtroSearch').val('');
+                actualizarSelectCategoriasFiltro();
+                cargarMovimientos(1);
+            });
+
+            // Cuando cambia el filtro de Tipo, actualizar las opciones de Categoría en el filtro
+            $('#filtroTipo').on('change', function() {
+                actualizarSelectCategoriasFiltro();
+            });
+
             if (isAdmin) {
-                // Listeners de filtros exclusivos de Admin
-                $('#filtroMes, #filtroAnio, #filtroTipo, #filtroCaja, #filtroCategoria, #filtroMetodoPago').on('change', function() {
-                    cargarMovimientos(1);
-                });
-
-                // Buscador con debounce
-                let searchTimeout = null;
-                $('#filtroSearch').on('input', function() {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        cargarMovimientos(1);
-                    }, 300);
-                });
-
-                // Limpiar filtros
-                $('#btnLimpiarFiltros').on('click', function() {
-                    $('#filtroMes').val('');
-                    $('#filtroAnio').val('<?= $anioActual ?>');
-                    $('#filtroTipo').val('');
-                    $('#filtroCaja').val('');
-                    $('#filtroCategoria').val('');
-                    $('#filtroMetodoPago').val('');
-                    $('#filtroSearch').val('');
-                    actualizarSelectCategoriasFiltro();
-                    cargarMovimientos(1);
-                });
-
-                // Cuando cambia el filtro de Tipo, actualizar las opciones de Categoría en el filtro
-                $('#filtroTipo').on('change', function() {
-                    actualizarSelectCategoriasFiltro();
-                });
-
-                // Botón exportar Excel
+                // Botón exportar Excel (exclusivo Admin)
                 $('#btnExportarExcel').on('click', function() {
                     exportarExcel();
                 });
@@ -782,32 +781,30 @@ $anioActual = (int)date('Y');
                 limit: 20
             });
 
-            if (isAdmin) {
-                const mes = $('#filtroMes').val();
-                const anio = $('#filtroAnio').val();
-                const tipo = $('#filtroTipo').val();
-                const caja = $('#filtroCaja').val();
-                const categoria = $('#filtroCategoria').val();
-                const metodo_pago = $('#filtroMetodoPago').val();
-                const search = $('#filtroSearch').val();
+            const mes = $('#filtroMes').val();
+            const anio = $('#filtroAnio').val();
+            const tipo = $('#filtroTipo').val();
+            const caja = $('#filtroCaja').val();
+            const categoria = $('#filtroCategoria').val();
+            const metodo_pago = $('#filtroMetodoPago').val();
+            const search = $('#filtroSearch').val();
 
-                if (mes) params.append('mes', mes);
-                if (anio) params.append('anio', anio);
-                if (tipo) params.append('tipo', tipo);
-                if (caja) params.append('caja', caja);
-                if (categoria) params.append('categoria', categoria);
-                if (metodo_pago) params.append('metodo_pago', metodo_pago);
-                if (search) params.append('search', search);
+            if (mes) params.append('mes', mes);
+            if (anio) params.append('anio', anio);
+            if (tipo) params.append('tipo', tipo);
+            if (caja) params.append('caja', caja);
+            if (categoria) params.append('categoria', categoria);
+            if (metodo_pago) params.append('metodo_pago', metodo_pago);
+            if (search) params.append('search', search);
 
-                $('#tbodyMovimientos').html(`
-                    <tr>
-                        <td colspan="10" class="text-center py-5 text-muted">
-                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-                            Cargando movimientos...
-                        </td>
-                    </tr>
-                `);
-            }
+            $('#tbodyMovimientos').html(`
+                <tr>
+                    <td colspan="10" class="text-center py-5 text-muted">
+                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                        Cargando movimientos...
+                    </td>
+                </tr>
+            `);
 
             fetch(`/app/api/admin/contabilidad_get_movimientos.php?${params.toString()}`, {
                 headers: {
@@ -827,34 +824,28 @@ $anioActual = (int)date('Y');
                     // Renderizar tarjetas de totales
                     renderTotales(data.totales);
 
-                    // Renderizar tabla y paginación solo si es admin
-                    if (isAdmin) {
-                        renderTabla(data.movimientos);
-                        renderPaginacion(data.pagination);
-                    }
+                    // Renderizar tabla y paginación
+                    renderTabla(data.movimientos);
+                    renderPaginacion(data.pagination);
                 } else {
-                    if (isAdmin) {
-                        $('#tbodyMovimientos').html(`
-                            <tr>
-                                <td colspan="10" class="text-center py-4 text-danger">
-                                    <i class="fas fa-exclamation-triangle me-1"></i> Error: ${data.message || 'No se pudieron cargar los movimientos'}
-                                </td>
-                            </tr>
-                        `);
-                    }
-                }
-            })
-            .catch(err => {
-                console.error('Error al cargar movimientos:', err);
-                if (isAdmin) {
                     $('#tbodyMovimientos').html(`
                         <tr>
                             <td colspan="10" class="text-center py-4 text-danger">
-                                <i class="fas fa-exclamation-circle me-1"></i> Error de conexión con el servidor.
+                                <i class="fas fa-exclamation-triangle me-1"></i> Error: ${data.message || 'No se pudieron cargar los movimientos'}
                             </td>
                         </tr>
                     `);
                 }
+            })
+            .catch(err => {
+                console.error('Error al cargar movimientos:', err);
+                $('#tbodyMovimientos').html(`
+                    <tr>
+                        <td colspan="10" class="text-center py-4 text-danger">
+                            <i class="fas fa-exclamation-circle me-1"></i> Error de conexión con el servidor.
+                        </td>
+                    </tr>
+                `);
             });
         }
 
@@ -865,6 +856,10 @@ $anioActual = (int)date('Y');
             // Saldo Caja Evelyn (visible tanto para admin como para operador)
             if ($('#statSaldoEvelyn').length) {
                 $('#statSaldoEvelyn').text(formatoMoneda.format(totales.saldo_caja_evelyn || 0));
+            }
+
+            if ($('#badgeTotalRegistros').length) {
+                $('#badgeTotalRegistros').text(`${totales.total_registros || 0} movimientos`);
             }
 
             // Métricas exclusivas para Admin
@@ -884,8 +879,6 @@ $anioActual = (int)date('Y');
                 } else {
                     elBalance.removeClass('text-primary').addClass('text-danger');
                 }
-
-                $('#badgeTotalRegistros').text(`${totales.total_registros || 0} movimientos`);
             }
         }
 
@@ -933,6 +926,7 @@ $anioActual = (int)date('Y');
                         <td>
                             <strong class="text-dark">${escapeHtml(m.categoria)}</strong>
                             ${m.id_reserva ? `<br><small class="text-muted"><i class="fas fa-calendar-check me-1 text-primary"></i>Reserva #${m.id_reserva}</small>` : ''}
+                            ${(m.numero_noches || m.cantidad_personas) ? `<br><small class="text-muted">${m.numero_noches ? `<i class="fas fa-moon me-1 text-info"></i>${m.numero_noches} noche(s)` : ''}${(m.numero_noches && m.cantidad_personas) ? ' &bull; ' : ''}${m.cantidad_personas ? `<i class="fas fa-users me-1 text-secondary"></i>${m.cantidad_personas} pers.` : ''}</small>` : ''}
                         </td>
                         <td>
                             <div class="text-wrap" style="max-width: 300px;">
@@ -1010,19 +1004,19 @@ $anioActual = (int)date('Y');
 
         // Actualizar catálogos en los selects
         function actualizarCatalogosEnUI() {
-            if (isAdmin) {
-                // Métodos de pago en filtro
-                const selectMetodoFiltro = $('#filtroMetodoPago');
+            // Métodos de pago en filtro
+            const selectMetodoFiltro = $('#filtroMetodoPago');
+            if (selectMetodoFiltro.length) {
                 const selFiltroVal = selectMetodoFiltro.val();
                 selectMetodoFiltro.find('option:not(:first)').remove();
                 catalogo.metodos_pago.forEach(m => {
                     selectMetodoFiltro.append(`<option value="${m}">${m}</option>`);
                 });
                 if (selFiltroVal) selectMetodoFiltro.val(selFiltroVal);
-
-                // Categorías en filtro
-                actualizarSelectCategoriasFiltro();
             }
+
+            // Categorías en filtro
+            actualizarSelectCategoriasFiltro();
 
             // Métodos de pago en modal
             const selectMetodoModal = $('#movMetodoPago');
@@ -1119,6 +1113,8 @@ $anioActual = (int)date('Y');
             $('#movResponsable').val(m.responsable || '');
             $('#movComprobante').val(m.comprobante_numero || '');
             $('#movReserva').val(m.id_reserva || '');
+            $('#movNoches').val(m.numero_noches || '');
+            $('#movPersonas').val(m.cantidad_personas || '');
             $('#movDescripcion').val(m.descripcion || '');
 
             if (m.tipo === 'salida') {
@@ -1150,6 +1146,8 @@ $anioActual = (int)date('Y');
                 responsable: $('#movResponsable').val(),
                 comprobante_numero: $('#movComprobante').val(),
                 id_reserva: $('#movReserva').val(),
+                numero_noches: $('#movNoches').val(),
+                cantidad_personas: $('#movPersonas').val(),
                 descripcion: $('#movDescripcion').val()
             };
 

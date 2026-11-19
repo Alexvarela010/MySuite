@@ -79,6 +79,7 @@ class AuthHelper {
                 $permisos_default = [
                     'reservas' => true,
                     'calendario' => true,
+                    'proximas_reservas' => true,
                     'contabilidad' => true
                 ];
                 return $permisos_default[$moduloCodigo] ?? false;

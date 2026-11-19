@@ -79,9 +79,35 @@ $tipo_mensaje = '';
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
     $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-    
-    // Validar ID
-    if ($id <= 0) {
+
+    if ($action === 'cleanup_ical_cancelled') {
+        try {
+            $database = new Database();
+            $db = $database->getConnection();
+            if (!$db) {
+                throw new Exception("Error de conexión a la base de datos");
+            }
+            $stmtClean = $db->prepare("
+                DELETE FROM reservas
+                WHERE estado = 'cancelada'
+                  AND total = 0
+                  AND (
+                      (ical_uid IS NOT NULL AND ical_uid != '')
+                      OR correo LIKE 'sync@%.auto'
+                      OR comentario LIKE 'Importada automáticamente desde%'
+                  )
+            ");
+            $stmtClean->execute();
+            $eliminadas = $stmtClean->rowCount();
+            $mensaje = $eliminadas > 0
+                ? "Limpieza completada: se eliminaron {$eliminadas} reserva(s) cancelada(s) generadas por sincronización iCal (Booking/Airbnb)."
+                : "No había reservas canceladas de iCal pendientes por limpiar.";
+            $tipo_mensaje = 'success';
+        } catch (Exception $e) {
+            $mensaje = 'Error al limpiar reservas iCal: ' . $e->getMessage();
+            $tipo_mensaje = 'danger';
+        }
+    } elseif ($id <= 0) {
         $mensaje = 'Error: ID de reserva inválido';
         $tipo_mensaje = 'danger';
     } else {
@@ -201,6 +227,13 @@ if (isset($_GET['action'])) {
                     // Construir mensaje
                     if ($nuevo_estado == 'abonada') {
                         $mensaje = 'Reserva marcada como ABONADA exitosamente.';
+                        try {
+                            require_once __DIR__ . '/../../../includes/contabilidad_helper.php';
+                            $currentUser = $_SESSION['user_nombre'] ?? $_SESSION['user_correo'] ?? 'Sistema';
+                            ContabilidadHelper::registrarPagoReserva($db, (int)$id, 'abonada', [], $currentUser);
+                        } catch (\Throwable $eContab) {
+                            error_log("Warning sync contabilidad en reservas.php: " . $eContab->getMessage());
+                        }
                     } else {
                         $mensaje = 'Reserva aprobada exitosamente.';
                         if ($reservas_rechazadas > 0) {
@@ -279,6 +312,15 @@ if (isset($_GET['action'])) {
                 $query = "UPDATE reservas SET estado = 'cancelada' WHERE id_reserva = ?";
                 $stmt = $db->prepare($query);
                 $stmt->execute([$id]);
+
+                // Eliminar movimientos contables asociados a la reserva cancelada
+                $movsEliminados = 0;
+                try {
+                    require_once __DIR__ . '/../../../includes/contabilidad_helper.php';
+                    $movsEliminados = ContabilidadHelper::eliminarMovimientosReserva($db, (int)$id);
+                } catch (\Throwable $eContab) {
+                    error_log("Warning eliminando movimientos contables de reserva cancelada #{$id}: " . $eContab->getMessage());
+                }
                 
                 // Enviar email de cancelación
                 $email_enviado = false;
@@ -298,6 +340,9 @@ if (isset($_GET['action'])) {
                 }
                 
                 $mensaje = 'Reserva cancelada';
+                if ($movsEliminados > 0) {
+                    $mensaje .= " (se eliminaron {$movsEliminados} registro(s) en contabilidad)";
+                }
                 if ($email_enviado) {
                     $mensaje .= '. Se envió correo de notificación al cliente.';
                 }
@@ -321,6 +366,7 @@ if (isset($_GET['action'])) {
 
 // Obtener filtros
 $estado_filtro = $_GET['estado'] ?? '';
+$plataforma_filtro = $_GET['plataforma'] ?? '';
 $fecha_desde = $_GET['fecha_desde'] ?? '';
 $fecha_hasta = $_GET['fecha_hasta'] ?? '';
 $palmira_filtro = $_GET['palmira'] ?? '';
@@ -328,6 +374,16 @@ $palmira_filtro = $_GET['palmira'] ?? '';
 // Construir consulta
 $where_conditions = [];
 $params = [];
+
+if ($plataforma_filtro) {
+    if ($plataforma_filtro === 'web') {
+        $where_conditions[] = "(r.ical_uid IS NULL OR r.ical_uid = '') AND (r.ical_platform IS NULL OR r.ical_platform = '') AND (r.correo IS NULL OR r.correo NOT LIKE 'sync@%.auto')";
+    } else {
+        $where_conditions[] = "(r.ical_platform = ? OR r.correo = ?)";
+        $params[] = $plataforma_filtro;
+        $params[] = "sync@{$plataforma_filtro}.auto";
+    }
+}
 
 if ($estado_filtro) {
     if ($estado_filtro === 'pagada') {  
@@ -650,13 +706,19 @@ try {
 
             <!-- Main Content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2"><i class="fas fa-calendar-check me-2"></i> Gestión de Reservas</h1>
-                        <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-calendar-check me-2"></i> Gestión de Reservas</h1>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="reservas.php?action=cleanup_ical_cancelled" 
+                               class="btn btn-outline-danger" 
+                               onclick="return confirm('¿Eliminar todas las reservas canceladas creadas automáticamente por Booking/Airbnb (iCal)? Las reservas de la página web NO se tocarán.');"
+                               title="Eliminar registros fantasma cancelados de Booking/Airbnb">
+                                <i class="fas fa-broom me-1"></i>Limpiar iCal Canceladas
+                            </a>
                             <button class="btn btn-outline-primary" onclick="location.reload()" title="Refrescar tabla">
                                 <i class="fas fa-sync-alt me-1"></i>Refresh
                             </button>
-                            <div class="text-muted">
+                            <div class="text-muted ms-2">
                                 <i class="fas fa-calendar me-1"></i>
                                 <?php echo date('d/m/Y H:i'); ?>
                             </div>
@@ -679,6 +741,16 @@ try {
                             </h5>
                             <form method="GET" class="row g-3">
                                 <div class="col-md-2">
+                                    <label for="plataforma" class="form-label">Origen</label>
+                                    <select class="form-select" id="plataforma" name="plataforma">
+                                        <option value="">Todos los orígenes</option>
+                                        <option value="web" <?php echo $plataforma_filtro === 'web' ? 'selected' : ''; ?>>Página Web</option>
+                                        <option value="airbnb" <?php echo $plataforma_filtro === 'airbnb' ? 'selected' : ''; ?>>Airbnb</option>
+                                        <option value="booking" <?php echo $plataforma_filtro === 'booking' ? 'selected' : ''; ?>>Booking</option>
+                                        <option value="foreversummer" <?php echo $plataforma_filtro === 'foreversummer' ? 'selected' : ''; ?>>Forever Summer</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
                                     <label for="estado" class="form-label">Estado</label>
                                     <select class="form-select" id="estado" name="estado">
                                         <option value="">Todos los estados</option>
@@ -695,7 +767,7 @@ try {
                                     <select class="form-select" id="palmira" name="palmira">
                                         <option value="">Todas las ciudades</option>
                                         <option value="1" <?php echo $palmira_filtro === '1' || $palmira_filtro === 'true' ? 'selected' : ''; ?>>
-                                            <i class="fas fa-map-marker-alt me-1"></i> Solo Palmira
+                                            Solo Palmira
                                         </option>
                                     </select>
                                 </div>
@@ -709,17 +781,12 @@ try {
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label">&nbsp;</label>
-                                    <div class="d-grid">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-search me-2"></i>Filtrar
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary flex-grow-1">
+                                            <i class="fas fa-search me-1"></i>Filtrar
                                         </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">&nbsp;</label>
-                                    <div class="d-grid">
-                                        <a href="reservas.php" class="btn btn-outline-secondary">
-                                            <i class="fas fa-times me-2"></i>Limpiar
+                                        <a href="reservas.php" class="btn btn-outline-secondary" title="Limpiar filtros">
+                                            <i class="fas fa-times"></i>
                                         </a>
                                     </div>
                                 </div>
@@ -974,6 +1041,32 @@ try {
                         <strong>Instrucciones:</strong> El cliente debe enviar el comprobante de pago al correo: <strong>gerencia@mysuiteincartagena.com.co</strong>
                     </div>
                     
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="cajaPagoContab" class="form-label fw-bold small">
+                                <i class="fas fa-cash-register me-1 text-primary"></i> Caja en Contabilidad
+                            </label>
+                            <select class="form-select form-select-sm" id="cajaPagoContab">
+                                <option value="Carlos" selected>Caja Carlos</option>
+                                <option value="Evelyn">Caja Evelyn</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="metodoPagoContab" class="form-label fw-bold small">
+                                <i class="fas fa-credit-card me-1 text-primary"></i> Medio de Pago (Contabilidad)
+                            </label>
+                            <select class="form-select form-select-sm" id="metodoPagoContab">
+                                <option value="auto" selected>Automático (según reserva)</option>
+                                <option value="TRANSFERENCIA BANCOLOMBIA">TRANSFERENCIA BANCOLOMBIA</option>
+                                <option value="EFECTIVO">EFECTIVO</option>
+                                <option value="LLAVE">LLAVE</option>
+                                <option value="BOLD">BOLD</option>
+                                <option value="DAVIPLATA">DAVIPLATA</option>
+                                <option value="TARJETA DE CREDITO">TARJETA DE CREDITO</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label for="notasPago" class="form-label">
                             <i class="fas fa-sticky-note me-2"></i>Notas sobre el Pago (Opcional)
@@ -1457,6 +1550,7 @@ try {
             // Obtener los parámetros actuales de la URL
             const urlParams = new URLSearchParams(window.location.search);
             const estado = urlParams.get('estado') || '';
+            const plataforma = urlParams.get('plataforma') || '';
             const fecha_desde = urlParams.get('fecha_desde') || '';
             const fecha_hasta = urlParams.get('fecha_hasta') || '';
             const palmira = urlParams.get('palmira') || '';
@@ -1464,6 +1558,7 @@ try {
             // Construir URL con los mismos filtros
             let url = 'reservas.php?';
             if (estado) url += 'estado=' + encodeURIComponent(estado) + '&';
+            if (plataforma) url += 'plataforma=' + encodeURIComponent(plataforma) + '&';
             if (fecha_desde) url += 'fecha_desde=' + encodeURIComponent(fecha_desde) + '&';
             if (fecha_hasta) url += 'fecha_hasta=' + encodeURIComponent(fecha_hasta) + '&';
             if (palmira) url += 'palmira=' + encodeURIComponent(palmira) + '&';
@@ -1506,6 +1601,10 @@ try {
         function marcarComprobante(id) {
             document.getElementById('reservaIdComprobante').value = id;
             document.getElementById('notasPago').value = '';
+            const cajaEl = document.getElementById('cajaPagoContab');
+            const metodoEl = document.getElementById('metodoPagoContab');
+            if (cajaEl) cajaEl.value = 'Carlos';
+            if (metodoEl) metodoEl.value = 'auto';
             
             const modal = new bootstrap.Modal(document.getElementById('comprobanteModal'));
             modal.show();
@@ -1514,6 +1613,8 @@ try {
         function confirmarPago() {
             const reservaId = document.getElementById('reservaIdComprobante').value;
             const notas = document.getElementById('notasPago').value;
+            const cajaContab = document.getElementById('cajaPagoContab') ? document.getElementById('cajaPagoContab').value : 'Carlos';
+            const metodoContab = document.getElementById('metodoPagoContab') ? document.getElementById('metodoPagoContab').value : 'auto';
             
             if (!reservaId) {
                 alert('Error: ID de reserva no encontrado');
@@ -1544,6 +1645,27 @@ try {
             })
             .then(data => {
                 if (data.success) {
+                    // Sincronización asíncrona en segundo plano hacia Contabilidad (sin demorar la UI)
+                    if (data.etapa_contabilidad) {
+                        fetch('../../../app/api/admin/contabilidad_sync_reserva.php', {
+                            method: 'POST',
+                            keepalive: true,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                id_reserva: data.id_reserva || reservaId,
+                                etapa: data.etapa_contabilidad,
+                                was_abonada: data.was_abonada ? 1 : 0,
+                                notas: notas,
+                                caja: cajaContab,
+                                metodo_pago: metodoContab
+                            })
+                        }).catch(err => console.warn('Sync contabilidad en segundo plano:', err));
+                    }
+
                     alert(data.message);
                     // Cerrar modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('comprobanteModal'));

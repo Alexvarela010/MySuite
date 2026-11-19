@@ -217,24 +217,48 @@ function _ical_sync_insertReserva(
 }
 
 /**
- * Cancela reservas sync que ya no aparecen en el feed iCal actual.
+ * Elimina reservas/bloqueos sync de iCal que ya no aparecen en el feed actual
+ * o que quedaron previamente canceladas por iCal (sin valor monetario).
  *
- * Busca reservas con ical_platform = :platform cuyo ical_uid no esté
- * en la lista de UIDs vigentes. Las marca como 'cancelada' en lugar de
- * borrarlas, para tener trazabilidad.
+ * Al hacer DELETE directo en lugar de marcarlas como 'cancelada', se evita
+ * acumular cientos de registros fantasma por ventanas móviles de Airbnb/Booking.
+ * Las reservas reales de la página web (ical_uid IS NULL) nunca se tocan.
  *
  * @param PDO    $db
  * @param int    $apartamento_id
- * @param string $platform       'airbnb' | 'booking' | 'ical_externo'
+ * @param string $platform       'airbnb' | 'booking' | 'foreversummer' | 'ical_externo'
  * @param array  $validUids      Lista de UIDs que SÍ están vigentes
- * @return int   Cantidad de reservas canceladas
+ * @return int   Cantidad de registros eliminados
  */
 function _ical_sync_cleanupRemovedReservations(PDO $db, int $apartamento_id, string $platform, array $validUids): int
 {
+    $totalDeleted = 0;
+
+    // 1. Eliminar registros iCal previamente marcados como 'cancelada' (incluyendo registros legacy sin ical_uid)
+    $stmtOld = $db->prepare("
+        DELETE FROM reservas
+        WHERE id_apartamento = :apt
+          AND estado = 'cancelada'
+          AND total = 0
+          AND (
+              (ical_platform = :platform AND ical_uid IS NOT NULL AND ical_uid != '')
+              OR correo = :sync_email
+              OR comentario LIKE :legacy_prefix
+          )
+    ");
+    $stmtOld->execute([
+        ':apt' => $apartamento_id,
+        ':platform' => $platform,
+        ':sync_email' => "sync@{$platform}.auto",
+        ':legacy_prefix' => "Importada automáticamente desde {$platform}%"
+    ]);
+    $totalDeleted += $stmtOld->rowCount();
+
     if (empty($validUids)) {
-        return 0;
+        return $totalDeleted;
     }
 
+    // 2. Eliminar eventos iCal que ya no están en el feed vigente (en lugar de marcarlos 'cancelada')
     $placeholders = [];
     $params = [':platform' => $platform, ':apt' => $apartamento_id];
     foreach ($validUids as $i => $uid) {
@@ -245,20 +269,21 @@ function _ical_sync_cleanupRemovedReservations(PDO $db, int $apartamento_id, str
     $inClause = implode(',', $placeholders);
 
     $sql = "
-        UPDATE reservas
-        SET estado = 'cancelada',
-            comentario = CONCAT(comentario, ' | Cancelada automáticamente por sync iCal: ya no aparece en el feed')
+        DELETE FROM reservas
         WHERE id_apartamento = :apt
           AND ical_platform  = :platform
           AND ical_uid IS NOT NULL
+          AND ical_uid != ''
           AND ical_uid NOT IN ({$inClause})
           AND fecha_salida >= CURDATE()
-          AND estado NOT IN ('cancelada', 'rechazada')
+          AND total = 0
     ";
 
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
-    return $stmt->rowCount();
+    $totalDeleted += $stmt->rowCount();
+
+    return $totalDeleted;
 }
 
 /**
@@ -321,8 +346,25 @@ function syncIcalReservations(int $apartamento_id = 1): array
         // Parsear eventos
         $events = $integrator->parseIcalData($icalContent);
 
-        // ── Colectar UIDs vigentes en el feed para limpieza posterior ─
+        // ── Colectar UIDs vigentes y limpiar primero los que salieron del feed ─
         $validUids = [];
+        foreach ($events as $evTmp) {
+            if (!empty($evTmp['UID']) && !empty($evTmp['DTEND'])) {
+                try {
+                    $tmpEnd = new DateTime($evTmp['DTEND']);
+                    if ($tmpEnd->format('Y-m-d') >= date('Y-m-d')) {
+                        $validUids[] = $evTmp['UID'];
+                    }
+                } catch (Throwable $eTmp) {
+                    // ignorar fecha inválida
+                }
+            }
+        }
+
+        $limpiadas = _ical_sync_cleanupRemovedReservations($db, $apartamento_id, $platform, $validUids);
+        if ($limpiadas > 0) {
+            $result['detalle'][] = "[CLEANUP] {$limpiadas} registro(s) obsoleto(s)/cancelado(s) eliminado(s) del feed {$platform}";
+        }
 
         foreach ($events as $event) {
             // Necesitamos DTSTART y DTEND para crear la reserva
@@ -364,11 +406,6 @@ function syncIcalReservations(int $apartamento_id = 1): array
             $summary = $event['SUMMARY'] ?? '';
             $icalUid = $event['UID'] ?? '';
 
-            // Registrar UID si el evento tiene uno
-            if ($icalUid !== '') {
-                $validUids[] = $icalUid;
-            }
-
             // ── Verificar duplicado en BD (primero por UID, luego por fechas) ──
             if (_ical_sync_reservaExiste($db, $apartamento_id, $fecha_entrada, $fecha_salida, $icalUid)) {
                 $result['omitidas']++;
@@ -400,12 +437,6 @@ function syncIcalReservations(int $apartamento_id = 1): array
                 $result['errores']++;
                 $result['detalle'][] = "[ERROR] No se pudo insertar reserva {$fecha_entrada} → {$fecha_salida}: " . $e->getMessage();
             }
-        }
-
-        // ── Limpiar reservas que ya no están en el feed ────────────────
-        $limpiadas = _ical_sync_cleanupRemovedReservations($db, $apartamento_id, $platform, $validUids);
-        if ($limpiadas > 0) {
-            $result['detalle'][] = "[CLEANUP] {$limpiadas} reserva(s) eliminada(s) del feed {$platform} — ya no aparecen en el iCal";
         }
     }
 

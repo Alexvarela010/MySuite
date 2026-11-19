@@ -43,23 +43,18 @@ try {
     $isAdmin = AuthHelper::isAdmin();
     $categorias = ContabilidadHelper::getCategorias($db);
 
+    $data = ContabilidadHelper::getMovimientos($db, $filters, $page, $limit);
+    $movimientos = $data['data'];
+    $pagination = $data['pagination'];
+
     if ($isAdmin) {
-        $data = ContabilidadHelper::getMovimientos($db, $filters, $page, $limit);
         $totales = ContabilidadHelper::getTotales($db, $filters);
-        $movimientos = $data['data'];
-        $pagination = $data['pagination'];
     } else {
-        // Para operadores: NO exponer movimientos ni totales generales ni saldo de Carlos
+        // Para operadores: solo exponer saldo de Caja Evelyn y total de registros para la tabla (sin totales generales ni Caja Carlos)
         $totalesGlobal = ContabilidadHelper::getTotales($db, []);
         $totales = [
-            'saldo_caja_evelyn' => $totalesGlobal['saldo_caja_evelyn'] ?? 0
-        ];
-        $movimientos = [];
-        $pagination = [
-            'current_page' => 1,
-            'total_pages' => 1,
-            'total_records' => 0,
-            'per_page' => $limit
+            'saldo_caja_evelyn' => $totalesGlobal['saldo_caja_evelyn'] ?? 0,
+            'total_registros' => $pagination['total_records'] ?? 0
         ];
     }
 

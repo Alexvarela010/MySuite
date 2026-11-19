@@ -261,6 +261,8 @@ CREATE TABLE IF NOT EXISTS contabilidad_movimientos (
     descripcion TEXT NULL,
     comprobante_numero VARCHAR(100) NULL,
     id_reserva INT NULL,
+    numero_noches INT NULL,
+    cantidad_personas INT NULL,
     creado_por VARCHAR(150) NULL,
     activo TINYINT(1) DEFAULT 1,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
